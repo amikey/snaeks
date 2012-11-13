@@ -10,9 +10,12 @@ var
 
 function mainLoop(): int;
 var
+	i: int;
+	
 	ev: SDL_Event;
 	gotevent: int;
 	player: playerState;
+	seg: playerSegment;
 	err: int;
 	
 	dirKeys: array[0..3] of int;
@@ -32,6 +35,8 @@ begin
 	player.sprite := SDL_CreateRGBSurface(SDL_SWSURFACE, 10, 10, 32, 0, 0, 0, 0);
 	if player.sprite = nil then exit(1);
 	SDL_FillRect(player.sprite, nil, $0000ff00);
+	
+	for i := 1 to 5 do addSegment(@player, seg);
 	
 	lastTime := SDL_GetTicks();
 		
