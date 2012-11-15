@@ -1,4 +1,4 @@
-uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, tile, player, key_control;
+uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, tile, player, key_control, world, pickups;
 
 {function IMG_Init(flags: sint32): sint32; cdecl; external 'SDL_image';}
 {$COPERATORS ON}
@@ -13,15 +13,22 @@ var
 	i: int;
 	
 	ev: SDL_Event;
+
 	gotevent: int;
+	
 	player: playerState;
 	seg: playerSegment;
 	err: int;
 	
 	dirKeys: array[0..3] of int;
 	
-	lastTime, dt: uint32;
+	lastTime, dt: sint32;
+	world: WorldState;
 begin
+	randomize();
+	
+	pickupsInit();
+	
 	dirKeys[0] := knone;
 	dirKeys[1] := knone;
 	dirKeys[2] := knone;
@@ -31,17 +38,22 @@ begin
 	player.y := 2;
 	player.vx := 1;
 	player.vy := 0;
-	player.movDelay := 400;
-	player.sprite := SDL_CreateRGBSurface(SDL_SWSURFACE, 10, 10, 32, 0, 0, 0, 0);
+	player.movDelay := 300;
+	player.time := 0;
+
+	player.sprite := SDL_CreateRGBSurface(SDL_SWSURFACE, 12, 12, 32, 0, 0, 0, 0);
 	if player.sprite = nil then exit(1);
 	SDL_FillRect(player.sprite, nil, $0000ff00);
+	
+	addPlayer(@world, @player);
+	for i := 0 to 15 do spawnPickupType(@world, @pickupFood);
 	
 	for i := 1 to 5 do addSegment(@player, seg);
 	
 	lastTime := SDL_GetTicks();
 		
 	while true do begin
-		SDL_Delay(50);
+		SDL_Delay(20);
 		
 		gotevent := SDL_PollEvent(@ev);
 		if gotevent <> 0 then begin
@@ -70,13 +82,13 @@ begin
 		setVel(@player, dirKeys);
 		
 		dt := SDL_GetTicks() - lastTime;
+		
 		updatePlayer(@player, dt);
 		lastTime := SDL_GetTicks();
 		
 		err := SDL_FillRect(screen, nil, $00000000);
 		if err <> 0 then exit(err);
-		err := drawPlayer(player, screen);
-		if err <> 0 then exit(err);
+		drawWorld(@world, screen);
 		SDL_UpdateRect(screen, 0, 0, 0, 0);
 		err := SDL_Flip(screen);
 		if err <> 0 then exit(err);

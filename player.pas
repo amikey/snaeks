@@ -1,7 +1,9 @@
 unit player;
 
+{$COPERATORS ON}
+
 interface
-uses SDL_types, SDL, SDL_video;
+uses SDL_types, SDL, SDL_video, view;
 
 type
 	playerSegment = record
@@ -24,12 +26,11 @@ type
 		queue: aplayerSegment;
 	end;
 
-function drawPlayer(pl: playerState; dst: pSDL_Surface): int;
-procedure updatePlayer(pl: pplayerState; dt: uint32);
+procedure drawPlayer(pl: playerState; dst: pSDL_Surface; view: ViewPort);
+procedure updatePlayer(pl: pplayerState; dt: sint32);
 procedure addSegment(pl: pplayerState; seg: playerSegment);
 
 implementation
-{$COPERATORS ON}
 
 function queueAdd(var queue: aplayerSegment; seg: playerSegment): playerSegment;
 var
@@ -85,7 +86,7 @@ begin
 	queueAdd(pl^.queue, seg);
 end;
 
-procedure updatePlayer(pl: pplayerState; dt: uint32);
+procedure updatePlayer(pl: pplayerState; dt: sint32);
 begin
 	with pl^ do begin
 		time += dt;
@@ -96,22 +97,22 @@ begin
 	end;
 end;
 
-function drawPlayer(pl: playerState; dst: pSDL_Surface): int;
+procedure drawPlayer(pl: playerState; dst: pSDL_Surface; view: ViewPort);
 var
 	dstRect: SDL_Rect;
 	seg: playerSegment;
 	i: int;
 begin
-	dstRect.x := pl.x * pl.sprite^.w;
-	dstRect.y := pl.y * pl.sprite^.h;
-		
-	SDL_BlitSurface(pl.sprite, nil, dst, @dstRect);
-	
 	for i := 0 to high(pl.segments) do begin
-		dstRect.x := pl.segments[i].x * pl.sprite^.w;
-		dstRect.y := pl.segments[i].y * pl.sprite^.h;
+		dstRect.x := pl.segments[i].x * view.tileBase.w - view.pxOffset.x;
+		dstRect.y := pl.segments[i].y * view.tileBase.h - view.pxOffset.y;
 		SDL_BlitSurface(pl.sprite, nil, dst, @dstRect);
 	end;
+	
+	dstRect.x := pl.x * view.tileBase.w - view.pxOffset.x;
+	dstRect.y := pl.y * view.tileBase.h - view.pxOffset.y;
+	SDL_BlitSurface(pl.sprite, nil, dst, @dstRect);
 end;
+
 end.
 
