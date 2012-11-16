@@ -29,6 +29,9 @@ type
 procedure drawPlayer(pl: playerState; dst: pSDL_Surface; view: ViewPort);
 procedure updatePlayer(pl: pplayerState; dt: sint32);
 procedure addSegment(pl: pplayerState; seg: playerSegment);
+
+{ crawl makes the given player shift one tile, regardless of space. }
+{ The time counter is reset. }
 procedure crawl(pl: pplayerState);
 
 function playerOccupies(pl: pplayerState; x, y: int): boolean;

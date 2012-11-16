@@ -21,6 +21,8 @@ type
 
 procedure addPlayer(world: pWorldState; pl: pPlayerState);
 procedure addPickup(world: pWorldState; pu: Pickup);
+
+{ spawnPickupType spawns an item of the given type at a random position on the map. }
 procedure spawnPickupType(world: pWorldState; typ: pPickupType);
 
 procedure drawWorld(world: pWorldState; screen: pSDL_Surface);
