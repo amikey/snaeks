@@ -51,8 +51,9 @@ begin
 		rect.y := 3;
 		rect.w := 6;
 		rect.h := 6;
-		SDL_FillRect(sprite, nil, $00000000);
-		SDL_FillRect(sprite, @rect, $ffffff00);
+		SDL_FillRect(sprite, nil, SDL_MapRGBA(sprite^.format, 0, 0, 0, 0));
+		SDL_FillRect(sprite, @rect, SDL_MapRGBA(sprite^.format, 255, 255, 0, 255));
+		sprite := SDL_DisplayFormatAlpha(sprite);
 	end;
 	
 	exit('');

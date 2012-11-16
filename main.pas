@@ -1,12 +1,10 @@
-uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, tile, player, key_control, world, pickups;
+uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, SDL_image, tile, player, key_control, world, pickups;
 
-{function IMG_Init(flags: sint32): sint32; cdecl; external 'SDL_image';}
 {$COPERATORS ON}
 {$PACKRECORDS C}
 
 var
 	screen: pSDL_Surface;
-
 
 function mainLoop(): int;
 var
@@ -41,14 +39,18 @@ begin
 	player.movDelay := 300;
 	player.time := 0;
 
-	player.sprite := SDL_CreateRGBSurface(SDL_SWSURFACE, 12, 12, 32, 0, 0, 0, 0);
-	if player.sprite = nil then exit(1);
-	SDL_FillRect(player.sprite, nil, $0000ff00);
+	player.sprite := IMG_Load('res/snake.png');
+	if player.sprite = nil then begin
+		writeln(SDL_GetError());
+		exit(1);
+	end;
+	
+	player.sprite := SDL_DisplayFormatAlpha(player.sprite);
 	
 	addPlayer(@world, @player);
-	for i := 0 to 15 do spawnPickupType(@world, @pickupFood);
+	for i := 0 to 5 do spawnPickupType(@world, @pickupFood);
 	
-	for i := 1 to 5 do addSegment(@player, seg);
+	for i := 1 to 6 do addSegment(@player, seg);
 	
 	lastTime := SDL_GetTicks();
 		
@@ -99,7 +101,7 @@ var
 	status: int;
 begin
 	SDL_Init(SDL_INIT_VIDEO);
-	screen := SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE);
+	screen := SDL_SetVideoMode(800, 480, 32, SDL_HWSURFACE);
 	if screen = nil then begin
 		writeln(StdErr, 'error:', SDL_GetError());
 		exit;
