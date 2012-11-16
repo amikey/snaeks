@@ -31,6 +31,8 @@ procedure updatePlayer(pl: pplayerState; dt: sint32);
 procedure addSegment(pl: pplayerState; seg: playerSegment);
 procedure crawl(pl: pplayerState);
 
+function playerOccupies(pl: pplayerState; x, y: int): boolean;
+
 implementation
 
 function queueAdd(var queue: aplayerSegment; seg: playerSegment): playerSegment;
@@ -58,6 +60,8 @@ var
 	i: int;
 	newseg: playerSegment;
 begin
+	if playerOccupies(pl, pl^.x+pl^.vx, pl^.y+pl^.vy) then exit;
+	
 	with pl^ do begin
 		if length(queue) = 0 then begin
 			for i := high(segments) downto 1 do begin
@@ -261,6 +265,16 @@ begin
 	dstRect.x := pl.x * view.tileBase.w - view.pxOffset.x;
 	dstRect.y := pl.y * view.tileBase.h - view.pxOffset.y;
 	SDL_BlitSurface(pl.sprite, @srcRect, dst, @dstRect);
+end;
+
+function playerOccupies(pl: pplayerState; x, y: int): boolean;
+var
+	seg: playerSegment;
+begin
+	for seg in pl^.segments do begin
+		if (seg.x = x) and (seg.y = y) then exit(true);
+	end;
+	exit(false);
 end;
 
 end.
