@@ -57,32 +57,20 @@ begin
 	while true do begin
 		SDL_Delay(20);
 		
-		gotevent := SDL_PollEvent(@ev);
-		if gotevent <> 0 then begin
-			case ev.eventtype of
-			SDL_KEYDOWN:
-				case ev.key.keysym.sym of
-				SDLK_UP: setKey(kup, dirKeys);
-				SDLK_DOWN: setKey(kdown, dirKeys);
-				SDLK_LEFT: setKey(kleft, dirKeys);
-				SDLK_RIGHT: setKey(kright, dirKeys);
-				end;
-			SDL_KEYUP:
-				case ev.key.keysym.sym of
-				SDLK_ESCAPE:
+		while SDL_PollEvent(@ev) <> 0 do begin
+			if gotevent <> 0 then begin
+				case ev.eventtype of
+				SDL_KEYDOWN:
+					processKeyEvent(ev, dirKeys, @player);
+				SDL_KEYUP:
+					if ev.key.keysym.sym = SDLK_ESCAPE then exit(0)
+					else processKeyEvent(ev, dirKeys, @player);
+				SDL_EVENTQUIT:
 					exit(0);
-				SDLK_UP: unsetKey(kup, dirKeys);
-				SDLK_DOWN: unsetKey(kdown, dirKeys);
-				SDLK_LEFT: unsetKey(kleft, dirKeys);
-				SDLK_RIGHT: unsetKey(kright, dirKeys);
 				end;
-			SDL_EVENTQUIT:
-				exit(0);
 			end;
 		end;
-		
-		setVel(@player, dirKeys);
-		
+				
 		dt := SDL_GetTicks() - lastTime;
 		
 		updatePlayer(@player, dt);

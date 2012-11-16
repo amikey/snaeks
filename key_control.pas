@@ -1,7 +1,7 @@
 unit key_control;
 
 interface
-uses SDL_types, player;
+uses SDL_types, SDL_events, SDL_keyboard, player;
 
 const
 	knone  = 0;
@@ -10,20 +10,23 @@ const
 	kleft  = 3;
 	kright = 4;
 
-procedure setKey(k: int; var kqueue: array of int);
-procedure unsetKey(k: int; var kqueue: array of int);
-procedure setVel(pl: pplayerState; kqueue: array of int);
+procedure processKeyEvent(ev: SDL_Event; var kqueue: array of int; player: pPlayerState);
 
 implementation
 
 procedure setKey(k: int; var kqueue: array of int);
 var
-	i: int;
+	i, j: int;
 begin
 	for i := 0 to 3 do begin
 		if kqueue[i] = knone then begin
 			kqueue[i] := k;
 			exit;
+		end;
+		
+		if kqueue[i] = k then begin
+			for j := i to 2 do kqueue[j] := kqueue[j+1];
+			kqueue[3] := knone;
 		end;
 	end;
 end;
@@ -37,7 +40,6 @@ begin
 		if kqueue[i] = k then begin
 			for j := i to 2 do begin
 				kqueue[j] := kqueue[j+1];
-				if kqueue[j+1] = knone then exit;
 			end;
 			kqueue[3] := knone;
 		end;
@@ -73,4 +75,32 @@ begin
 		end;
 	end;
 end;
+
+procedure processKeyEvent(ev: SDL_Event; var kqueue: array of int; player: pPlayerState);
+var
+	oldvx, oldvy: int;
+begin
+	case ev.eventtype of
+	SDL_KEYDOWN:
+		case ev.key.keysym.sym of
+		SDLK_UP: setKey(kup, kqueue);
+		SDLK_DOWN: setKey(kdown, kqueue);
+		SDLK_LEFT: setKey(kleft, kqueue);
+		SDLK_RIGHT: setKey(kright, kqueue);
+		end;
+	SDL_KEYUP:
+		case ev.key.keysym.sym of
+		SDLK_UP: unsetKey(kup, kqueue);
+		SDLK_DOWN: unsetKey(kdown, kqueue);
+		SDLK_LEFT: unsetKey(kleft, kqueue);
+		SDLK_RIGHT: unsetKey(kright, kqueue);
+		end;
+	end;
+	
+	oldvx := player^.vx;
+	oldvy := player^.vy;
+	setVel(player, kqueue);
+	if (player^.vx <> oldvx) or (player^.vy <> oldvy) then crawl(player);
+end;
+
 end.

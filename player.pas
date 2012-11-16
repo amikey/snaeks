@@ -29,6 +29,7 @@ type
 procedure drawPlayer(pl: playerState; dst: pSDL_Surface; view: ViewPort);
 procedure updatePlayer(pl: pplayerState; dt: sint32);
 procedure addSegment(pl: pplayerState; seg: playerSegment);
+procedure crawl(pl: pplayerState);
 
 implementation
 
@@ -79,6 +80,12 @@ begin
 		x += vx;
 		y += vy;
 	end;
+end;
+
+procedure crawl(pl: pplayerState);
+begin
+	shift(pl);
+	pl^.time := 0;
 end;
 
 procedure addSegment(pl: pplayerState; seg: playerSegment);
