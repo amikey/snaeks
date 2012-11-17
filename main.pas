@@ -32,6 +32,7 @@ begin
 	dirKeys[2] := knone;
 	dirKeys[3] := knone;
 	
+	player := PlayerState.init();
 	player.x := 2;
 	player.y := 2;
 	player.vx := 1;
@@ -48,10 +49,10 @@ begin
 	player.sprite := SDL_DisplayFormatAlpha(player.sprite);
 	
 	world := WorldState.init();
-	world.addPlayer(@player);
+	world.addPlayer(player);
 	for i := 0 to 5 do world.spawnPickupType(@pickupFood);
 	
-	for i := 1 to 6 do addSegment(@player, seg);
+	for i := 1 to 6 do player.addSegment(seg);
 	
 	lastTime := SDL_GetTicks();
 		
@@ -62,10 +63,10 @@ begin
 			if gotevent <> 0 then begin
 				case ev.eventtype of
 				SDL_KEYDOWN:
-					processKeyEvent(ev, dirKeys, @player);
+					processKeyEvent(ev, dirKeys, player);
 				SDL_KEYUP:
 					if ev.key.keysym.sym = SDLK_ESCAPE then exit(0)
-					else processKeyEvent(ev, dirKeys, @player);
+					else processKeyEvent(ev, dirKeys, player);
 				SDL_EVENTQUIT:
 					exit(0);
 				end;

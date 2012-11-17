@@ -10,17 +10,17 @@ type
 	pPickupType = ^PickupType;
 	
 	aPickup = array of Pickup;
-	apPlayerState = array of pPlayerState;
+	aPlayerState = array of PlayerState;
 	
 	WorldState = class(CollisionDetector)
 	public
 		map: TileMap;
 		pickups: aPickup;
-		players: apPlayerState;
+		players: aPlayerState;
 		
 		constructor init();
 		
-		procedure addPlayer(pl: pPlayerState);
+		procedure addPlayer(pl: PlayerState);
 		procedure addPickup(pu: Pickup);
 		
 		{ spawnPickupType spawns an item of the given type at a random position on the map. }
@@ -32,7 +32,7 @@ type
 		function isOccupied(x, y: int): boolean; override;
 		
 	private
-		procedure handlePlayer(pl: pPlayerState);
+		procedure handlePlayer(pl: PlayerState);
 	end;
 
 implementation
@@ -41,9 +41,9 @@ constructor WorldState.init();
 begin
 end;
 
-procedure WorldState.addPlayer(pl: pPlayerState);
+procedure WorldState.addPlayer(pl: PlayerState);
 begin
-	pl^.world := self;
+	pl.world := self;
 	setLength(self.players, length(self.players)+1);
 	self.players[high(self.players)] := pl;
 end;
@@ -69,15 +69,15 @@ begin
 	self.addPickup(pu);
 end;
 
-procedure WorldState.handlePlayer(pl: pPlayerState);
+procedure WorldState.handlePlayer(pl: PlayerState);
 var
 	item: Pickup;
 	i, j: int;
 begin
 	for i := 0 to high(self.pickups) do begin
 		item := self.pickups[i];
-		if (item.x = pl^.x) and (item.y = pl^.y) then begin
-			addItem(pl, item);
+		if (item.x = pl.x) and (item.y = pl.y) then begin
+			pl.addItem(item);
 			
 			for j := i to high(self.pickups)-1 do begin
 				self.pickups[j] := self.pickups[j+1];
@@ -92,12 +92,12 @@ end;
 procedure WorldState.update(dt: int);
 var
 	tRemaining: int;
-	pl: pPlayerState;
+	pl: PlayerState;
 begin
 	for pl in self.players do begin
 		tRemaining := dt;
 		while tRemaining > 0 do begin
-			tRemaining := updatePlayer(pl, tRemaining);
+			tRemaining := pl.update(tRemaining);
 			self.handlePlayer(pl);
 		end;
 	end;
@@ -106,7 +106,7 @@ end;
 procedure WorldState.draw(screen: pSDL_Surface);
 var
 	pu: Pickup;
-	pl: pPlayerState;
+	pl: PlayerState;
 	view: ViewPort;
 begin
 	view.pxOffset.x := 0;
@@ -115,15 +115,15 @@ begin
 	view.tileBase.h := 12;
 	
 	for pu in self.pickups do drawPickup(pu, screen, view);
-	for pl in self.players do drawPlayer(pl^, screen, view);
+	for pl in self.players do pl.draw(screen, view);
 end;
 
 function WorldState.isOccupied(x, y: int): boolean;
 var
-	pl: pPlayerState;
+	pl: PlayerState;
 begin
 	for pl in self.players do begin
-		if playerOccupies(pl, x, y) then exit(true);
+		if pl.occupies(x, y) then exit(true);
 	end;
 	exit(false);
 end;
