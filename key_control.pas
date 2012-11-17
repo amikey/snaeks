@@ -46,11 +46,32 @@ begin
 	end;
 end;
 
+function backwards(pl: pplayerState; dir: int): boolean;
+var
+	x, y: int;
+	seg: playerSegment;
+begin
+	if length(pl^.segments) = 0 then exit(false);
+	
+	x := 0;
+	y := 0;
+	
+	case dir of
+	kleft: x := -1;
+	kright: x := 1;
+	kup: y := -1;
+	kdown: y := 1;
+	end;
+	
+	seg := pl^.segments[0];
+	exit((seg.x = pl^.x + x) and (seg.y = pl^.y + y));
+end;
+
 procedure setVel(pl: pplayerState; kqueue: array of int);
 var i: int;
 begin
 	for i := 3 downto 0 do begin
-		case kqueue[i] of
+		if not backwards(pl, kqueue[i]) then case kqueue[i] of
 		kleft: begin
 			pl^.vx := -1;
 			pl^.vy :=  0;
