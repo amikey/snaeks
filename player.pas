@@ -3,15 +3,14 @@ unit player;
 {$COPERATORS ON}
 
 interface
-uses SDL_types, SDL, SDL_video, view;
+uses SDL_types, SDL, SDL_video, view, pickups, coldet;
 
 type
 	playerSegment = record
 		x, y: int;
 	end;
-	
 	aplayerSegment = array of playerSegment;
-	
+		
 	pplayerState = ^playerState;
 	playerState = record
 		x, y: int;
@@ -24,11 +23,14 @@ type
 		
 		segments: aplayerSegment;
 		queue: aplayerSegment;
+		
+		world: CollisionDetector;
 	end;
 
 procedure drawPlayer(pl: playerState; dst: pSDL_Surface; view: ViewPort);
-procedure updatePlayer(pl: pplayerState; dt: sint32);
+function updatePlayer(pl: pplayerState; dt: sint32): int;
 procedure addSegment(pl: pplayerState; seg: playerSegment);
+procedure addItem(pl: pPlayerState; item: Pickup);
 
 { crawl makes the given player shift one tile, regardless of space. }
 { The time counter is reset. }
@@ -58,12 +60,15 @@ begin
 	exit(ret);
 end;
 
-procedure shift(pl: pplayerState);
+function shift(pl: pplayerState): boolean;
 var
 	i: int;
 	newseg: playerSegment;
+	nx, ny: int;
 begin
-	if playerOccupies(pl, pl^.x+pl^.vx, pl^.y+pl^.vy) then exit;
+	nx := pl^.x+pl^.vx;
+	ny := pl^.y+pl^.vy;
+	if pl^.world.isOccupied(nx, ny) then exit(false);
 	
 	with pl^ do begin
 		if length(queue) = 0 then begin
@@ -76,7 +81,7 @@ begin
 			
 			x += vx;
 			y += vy;
-			exit;
+			exit(true);
 		end;
 		
 		newseg := queueRemove(queue);
@@ -90,9 +95,11 @@ begin
 end;
 
 procedure crawl(pl: pplayerState);
+var
+	shifted: boolean;
 begin
-	shift(pl);
-	pl^.time := 0;
+	shifted := shift(pl);
+	if shifted then pl^.time := 0;
 end;
 
 procedure addSegment(pl: pplayerState; seg: playerSegment);
@@ -100,14 +107,23 @@ begin
 	queueAdd(pl^.queue, seg);
 end;
 
-procedure updatePlayer(pl: pplayerState; dt: sint32);
+procedure addItem(pl: pPlayerState; item: Pickup);
+var
+	seg: playerSegment;
+begin
+	addSegment(pl, seg);
+end;
+
+function updatePlayer(pl: pplayerState; dt: sint32): int;
 begin
 	with pl^ do begin
-		time += dt;
-		while time >= movDelay do begin
+		if time + dt >= movDelay then begin
 			shift(pl);
-			time -= movDelay;
+			time := 0;
+			exit(dt - (movDelay - time));
 		end;
+		time += dt;
+		exit(0);
 	end;
 end;
 

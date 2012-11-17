@@ -47,8 +47,9 @@ begin
 	
 	player.sprite := SDL_DisplayFormatAlpha(player.sprite);
 	
-	addPlayer(@world, @player);
-	for i := 0 to 5 do spawnPickupType(@world, @pickupFood);
+	world := WorldState.init();
+	world.addPlayer(@player);
+	for i := 0 to 5 do world.spawnPickupType(@pickupFood);
 	
 	for i := 1 to 6 do addSegment(@player, seg);
 	
@@ -73,12 +74,12 @@ begin
 				
 		dt := SDL_GetTicks() - lastTime;
 		
-		updatePlayer(@player, dt);
+		world.update(dt);
 		lastTime := SDL_GetTicks();
 		
 		err := SDL_FillRect(screen, nil, $00000000);
 		if err <> 0 then exit(err);
-		drawWorld(@world, screen);
+		world.draw(screen);
 		SDL_UpdateRect(screen, 0, 0, 0, 0);
 		err := SDL_Flip(screen);
 		if err <> 0 then exit(err);
