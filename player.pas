@@ -133,34 +133,31 @@ var
 	ret: SDL_Rect;
 begin
 	ret.w := pl.sprite^.w div 4;
-	ret.h := pl.sprite^.h div 4;
+	ret.h := pl.sprite^.h div 5;
 	
 	if length(pl.segments) = 0 then begin
-		dx := pl.vx;
-		dy := pl.vy;
+		dx := -pl.vx;
+		dy := -pl.vy;
 	end else begin
-		dx := pl.x - pl.segments[0].x;
-		dy := pl.y - pl.segments[0].y;
+		dx := pl.segments[0].x - pl.x;
+		dy := pl.segments[0].y - pl.y;
 	end;
 	
 	with ret do begin
-		if dx = -1 then begin
-			x := 0;
-			y := 0;
-			exit(ret);
-		end;
-		if dy = -1 then begin
-			x := w;
-			y := 0;
-			exit(ret);
-		end;
+		y := 0;
 		if dx = 1 then begin
+			x := 0;
+			exit(ret);
+		end;
+		if dy = 1 then begin
+			x := w;
+			exit(ret);
+		end;
+		if dx = -1 then begin
 			x := 2 * w;
-			y := 0;
 			exit(ret);
 		end;
 		x := 3 * w;
-		y := 0;
 		exit(ret);
 	end;
 end;
@@ -171,18 +168,18 @@ var
 begin
 	with ret do begin
 		w := pl.sprite^.w div 4;
-		h := pl.sprite^.h div 4;
-		y := ret.h * 3;
+		h := pl.sprite^.h div 5;
+		y := h * 4;
 		
-		if dx = -1 then begin
+		if dx = 1 then begin
 			x := 0;
 			exit(ret);
 		end;
-		if dy = -1 then begin
+		if dy = 1 then begin
 			x := w;
 			exit(ret);
 		end;
-		if dx = 1 then begin
+		if dx = -1 then begin
 			x := 2 * w;
 			exit(ret);
 		end;
@@ -198,7 +195,7 @@ var
 begin
 	with ret do begin
 		w := pl.sprite^.w div 4;
-		h := pl.sprite^.h div 4;
+		h := pl.sprite^.h div 5;
 		
 		pdx := seg.x - prevSeg.x;
 		pdy := seg.y - prevSeg.y;
@@ -206,38 +203,56 @@ begin
 		ndy := nextSeg.y - seg.y;
 		
 		y := h;
-		if (pdx = -1) and (ndx = -1) then begin
+		if (pdx = 1) and (ndx = 1) then begin
 			x := 0;
 			exit(ret);
 		end;
-		if (pdx = 1) and (ndx = 1) then begin
+		if (pdx = -1) and (ndx = -1) then begin
 			x := 2 * w;
 			exit(ret);
 		end;
-		if (pdy = -1) and (ndy = -1) then begin
+		if (pdy = 1) and (ndy = 1) then begin
 			x := w;
 			exit(ret);
 		end;
-		if (pdy = 1) and (ndy = 1) then begin
+		if (pdy = -1) and (ndy = -1) then begin
 			x := 3 * w;		
 			exit(ret);
 		end;
 		
 		y := 2 * h;
-		if ((pdx = 1) and (ndy = 1)) or ((pdy = -1) and (ndx = -1)) then begin
+		if (pdy = -1) and (ndx = -1) then begin
 			x := 0;
 			exit(ret);
 		end;
-		if ((pdx = -1) and (ndy = -1)) or ((pdy = 1) and (ndx = 1)) then begin
+		if (pdx = 1) and (ndy = -1) then begin
+			x := w;
+			exit(ret);
+		end;
+		if (pdy = 1) and (ndx = 1) then begin
 			x := 2 * w;
 			exit(ret);
 		end;
-		if ((pdx = -1) and (ndy = 1)) or ((pdy = -1) and (ndx = 1)) then begin
+		if (pdx = -1) and (ndy = 1) then begin
 			x := 3 * w;
 			exit(ret);
 		end;
-		if ((pdx = 1) and (ndy = -1)) or ((pdy = 1) and (ndx = -1)) then begin
-			x := w;
+		
+		y := 3 * h;
+		if (pdy = 1) and (ndx = -1) then begin
+			x := 0;
+			exit(ret);
+		end;
+		if (pdx = -1) and (ndy = -1) then begin
+			x :=  w;
+			exit(ret);
+		end;
+		if (pdy = -1) and (ndx = 1) then begin
+			x := 2 * w;
+			exit(ret);
+		end;
+		if (pdx = 1) and (ndy = 1) then begin
+			x := 3 * w;
 			exit(ret);
 		end;
 	end;
@@ -249,6 +264,13 @@ var
 	seg, tailSeg: playerSegment;
 	i: int;
 begin
+	{ draw the head }
+	srcRect := headRect(pl);
+	dstRect.x := pl.x * view.tileBase.w - view.pxOffset.x;
+	dstRect.y := pl.y * view.tileBase.h - view.pxOffset.y;
+	SDL_BlitSurface(pl.sprite, @srcRect, dst, @dstRect);
+	
+	{ draw the first segment }
 	if length(pl.segments) >= 2 then begin
 		seg.x := pl.x;
 		seg.y := pl.y;
@@ -258,6 +280,7 @@ begin
 		SDL_BlitSurface(pl.sprite, @srcRect, dst, @dstRect);
 	end;
 	
+	{ draw the other segments }
 	for i := 1 to high(pl.segments)-1 do begin
 		srcRect := segmentRect(pl, pl.segments[i-1], pl.segments[i], pl.segments[i+1]);
 		dstRect.x := pl.segments[i].x * view.tileBase.w - view.pxOffset.x;
@@ -265,25 +288,21 @@ begin
 		SDL_BlitSurface(pl.sprite, @srcRect, dst, @dstRect);
 	end;
 	
+	{ draw the last segment }
 	if length(pl.segments) <> 0 then begin
 		if length(pl.segments) = 1 then begin
 			tailSeg := pl.segments[0];
-			srcRect := tailRect(pl, pl.x-tailSeg.x, pl.y-tailSeg.y);
+			srcRect := tailRect(pl, tailSeg.x-pl.x, tailSeg.y-pl.y);
 		end else begin
 			tailSeg := pl.segments[high(pl.segments)];
 			seg := pl.segments[high(pl.segments)-1];
-			srcRect := tailRect(pl, seg.x-tailSeg.x, seg.y-tailSeg.y);
+			srcRect := tailRect(pl, tailSeg.x-seg.x, tailSeg.y-seg.y);
 		end;
 		
 		dstRect.x := tailSeg.x * view.tileBase.w - view.pxOffset.x;
 		dstRect.y := tailSeg.y * view.tileBase.h - view.pxOffset.y;
 		SDL_BlitSurface(pl.sprite, @srcRect, dst, @dstRect);
 	end;
-	
-	srcRect := headRect(pl);
-	dstRect.x := pl.x * view.tileBase.w - view.pxOffset.x;
-	dstRect.y := pl.y * view.tileBase.h - view.pxOffset.y;
-	SDL_BlitSurface(pl.sprite, @srcRect, dst, @dstRect);
 end;
 
 function playerOccupies(pl: pplayerState; x, y: int): boolean;
