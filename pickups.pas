@@ -1,7 +1,7 @@
 unit pickups;
 
 interface
-uses SDL_types, SDL, SDL_video, view;
+uses SDL_types, SDL, SDL_video, SDL_image, view;
 
 type
 	PickupType = record
@@ -26,14 +26,19 @@ implementation
 
 procedure drawPickup(pu: Pickup; screen: pSDL_Surface; view: ViewPort);
 var
-	dstRect: SDL_Rect;
+	srcRect, dstRect: SDL_Rect;
 begin
+	srcRect.x := 12;
+	srcRect.y := 0;
+	srcRect.w := 12;
+	srcRect.h := 12;
+	
 	dstRect.x := pu.x * view.tileBase.w - view.pxOffset.x;
 	dstRect.y := pu.y * view.tileBase.h - view.pxOffset.y;
 	dstRect.w := view.tileBase.w;
 	dstRect.h := view.tileBase.h;
 	
-	SDL_BlitSurface(pu.typ^.sprite, nil, screen, @dstRect);
+	SDL_BlitSurface(pu.typ^.sprite, @srcRect, screen, @dstRect);
 end;
 	
 function pickupsInit(): string;
@@ -41,18 +46,19 @@ var
 	rect: SDL_Rect;
 begin
 	with pickupFood do begin
-		sprite := SDL_CreateRGBSurface(SDL_SWSURFACE or SDL_SRCALPHA, 12, 12, 32, 0, 0, 0, 0);
+		{sprite := SDL_CreateRGBSurface(SDL_SWSURFACE or SDL_SRCALPHA, 12, 12, 32, 0, 0, 0, 0);}
+		sprite := IMG_Load('res/tilemap.png');
 		if sprite = nil then begin
 			writeln(stderr, SDL_GetError());
 			exit;
 		end;
 		
-		rect.x := 3;
+		{rect.x := 3;
 		rect.y := 3;
 		rect.w := 6;
 		rect.h := 6;
 		SDL_FillRect(sprite, nil, SDL_MapRGBA(sprite^.format, 0, 0, 0, 0));
-		SDL_FillRect(sprite, @rect, SDL_MapRGBA(sprite^.format, 255, 255, 0, 255));
+		SDL_FillRect(sprite, @rect, SDL_MapRGBA(sprite^.format, 255, 255, 0, 255));}
 		sprite := SDL_DisplayFormatAlpha(sprite);
 	end;
 	

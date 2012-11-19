@@ -1,7 +1,7 @@
 unit world;
 
 interface
-uses sdl_types, SDL_video, tile, player, pickups, view, coldet;
+uses sdl_types, SDL_video, SDL_image, tile, player, pickups, view, coldet;
 
 const
 	TileEmpty = 1;
@@ -14,6 +14,7 @@ type
 	
 	WorldState = class(CollisionDetector)
 	public
+		tiles: TileSprites;
 		map: TileMap;
 		pickups: aPickup;
 		players: aPlayerState;
@@ -38,7 +39,23 @@ type
 implementation
 
 constructor WorldState.init();
+var
+	i: int;
+	ar: array[0..7] of int;
 begin
+	self.tiles.sprite := IMG_Load('res/tilemap.png');
+	setLength(self.tiles.rects, 8);
+	for i := 0 to 7 do begin
+		self.tiles.rects[i].x := i * 12;
+		self.tiles.rects[i].y := 12;
+		self.tiles.rects[i].h := 12;
+		self.tiles.rects[i].w := 12;
+	end;
+	
+	for i := 0 to 7 do ar[i] := i;
+	
+	self.map := TileMap.initZero(66, 39);
+	self.map.fillRectRandom(ar, 0, 0, 66, 39);
 end;
 
 procedure WorldState.addPlayer(pl: PlayerState);
@@ -58,11 +75,8 @@ procedure WorldState.spawnPickupType(typ: pPickupType);
 var
 	pu: Pickup;
 begin
-	{pu.x := random(self.map.width);
-	pu.y := random(self.map.height);}
-	
-	pu.x := random(60);
-	pu.y := random(38);
+	pu.x := random(self.map.width);
+	pu.y := random(self.map.height);
 	
 	pu.typ := typ;
 	
@@ -109,11 +123,14 @@ var
 	pl: PlayerState;
 	view: ViewPort;
 begin
-	view.pxOffset.x := 0;
-	view.pxOffset.y := 0;
+	view.pxOffset.x := -4;
+	view.pxOffset.y := -4;
+	view.pxOffset.w := screen^.w;
+	view.pxOffset.h := screen^.h;
 	view.tileBase.w := 12;
 	view.tileBase.h := 12;
 	
+	self.map.draw(self.tiles, screen, view);
 	for pu in self.pickups do drawPickup(pu, screen, view);
 	for pl in self.players do pl.draw(screen, view);
 end;
