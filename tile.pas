@@ -86,8 +86,7 @@ begin
 			srcr := sprites.rects[ind];
 			
 			dstr.x := x * view.tileBase.w - view.pxOffset.x;
-			{dstr.y := y * view.tileBase.h - view.pxOffset.y + view.tileBase.h - sprites.rects[ind].h;}
-			dstr.y := y * view.tileBase.h - view.pxOffset.y;
+			dstr.y := y * view.tileBase.h - view.pxOffset.y + view.tileBase.h - sprites.rects[ind].h;
 			dstr.w := sprites.rects[ind].w;
 			dstr.h := sprites.rects[ind].h;
 			
