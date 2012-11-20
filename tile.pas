@@ -1,7 +1,7 @@
 unit tile;
 
 interface
-uses math, types, sdl_types, sdl_video, view;
+uses math, types, SDL_types, SDL_video, SDL_image, view;
 
 const
 	TM_INVALID_TILE_INDEX = 1;
@@ -29,7 +29,35 @@ type
 		function draw(sprites: TileSprites; dst: pSDL_Surface; view: ViewPort): int;
 	end;
 
+function loadTiles(fname: pchar; w, h: int): TileSprites;
+
 implementation
+
+function loadTiles(fname: pchar; w, h: int): TileSprites;
+var
+	tiles: TileSprites;
+	rect: SDL_Rect;
+	tw, th: int;
+	x, y: int;
+begin
+	tiles.sprite := IMG_Load(fname);
+	if tiles.sprite = nil then begin
+		exit(tiles);
+	end;
+	
+	rect.w := tiles.sprite^.w div w;
+	rect.h := tiles.sprite^.h div h;
+	
+	setLength(tiles.rects, w * h);
+	for y := 0 to h-1 do begin
+		for x := 0 to w-1 do begin
+			rect.x := x * rect.w;
+			rect.y := y * rect.h;
+			tiles.rects[y*w + x] := rect;
+		end;
+	end;
+	exit(tiles);
+end;
 
 constructor TileMap.init();
 begin
