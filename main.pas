@@ -1,4 +1,4 @@
-uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, SDL_image, tile, player, key_control, world, pickups;
+uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, SDL_image, tile, player, key_control, world, pickups, color;
 
 {$COPERATORS ON}
 {$PACKRECORDS C}
@@ -22,6 +22,7 @@ var
 	
 	lastTime, dt: sint32;
 	world: WorldState;
+	
 begin
 	randomize();
 	
@@ -47,6 +48,7 @@ begin
 	end;
 	
 	player.sprite := SDL_DisplayFormatAlpha(player.sprite);
+	mapColorsRGB(player.sprite, SnakeCMapGreen , SnakeCMapBlue);
 	
 	world := WorldState.init();
 	world.addPlayer(player);

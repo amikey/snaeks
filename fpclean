@@ -3,13 +3,6 @@
 # fpclean wraps fpc and filter its output to make it more useful.
 fpc $*  2>&1 |
 
-# Remove the first 3 lines. They look something like this:
-#
-# Free Pascal Compiler version 2.6.0 [2012/05/17] for x86_64
-# Copyright (c) 1993-2011 by Florian Klaempfl and others
-# Target OS: Linux for x86-64
-grep -Ev -e '^Free Pascal Compiler version' -e '^Copyright' -e '^Traget OS' |
-
 # Translate file addresses to a more familiar format...
 # For line only
 sed -r 's/([_a-zA-Z0-9.]+)\(([0-9]+)\)(.*)/\1:\2:\3/' |
