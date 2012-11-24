@@ -39,20 +39,15 @@ type
 implementation
 
 constructor WorldState.init();
-var
-	i: int;
-	ar: array[10..17] of int;
 begin
 	self.tiles := loadTiles('res/tilemap.png', 10, 10);
 	if self.tiles.sprite = nil then begin
 		writeln(stderr, SDL_GetError());
 		halt(1);
 	end;
-	
-	for i := 10 to 17 do ar[i] := i;
-	
-	self.map := TileMap.initZero(66, 39);
-	self.map.fillRectRandom(ar, 0, 0, 66, 39);
+		
+	self.map := TileMap.init(66, 39);
+	self.map.fillRectRandom(10, 18, 0, 0, 66, 39);
 end;
 
 procedure WorldState.addPlayer(pl: PlayerState);

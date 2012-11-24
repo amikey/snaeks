@@ -19,16 +19,22 @@ type
 		width:  sint32;
 		height: sint32;
 		
-		constructor init();
-		constructor initZero(w, h: int);
+		{ TileMap.init creates a new TileMap with the five width and height, }
+		{ with all indices initialized to 0. }
+		constructor init(w, h: int);
 		
-		procedure fillRectRandom(indices: array of int; sx, sy, w, h: int);
+		{ fillRectRandom fills the given rectangle with indices in the range [ifrom, ito). }
+		procedure fillRectRandom(ifrom, ito: int; sx, sy, w, h: int);
 		
+		{ index returns the index at the given coordinates. }
 		function index(x: sint32; y: sint32): uint32;
 		
 		function draw(sprites: TileSprites; dst: pSDL_Surface; view: ViewPort): int;
 	end;
 
+{ loadTiles loads tile sprites from the given file. }
+{ w and h are the number of columns and the number of rows of sprites in the file, respectively. }
+{ All tile sprites must have the same dimmensions. }
 function loadTiles(fname: pchar; w, h: int): TileSprites;
 
 implementation
@@ -59,25 +65,23 @@ begin
 	exit(tiles);
 end;
 
-constructor TileMap.init();
-begin
-end;
-
-constructor TileMap.initZero(w, h: int);
+constructor TileMap.init(w, h: int);
+var j: int;
 begin
 	setLength(self.i, w*h);
 	self.width := w;
 	self.height := h;
 	self.skip := 0;
+	for j := 0 to h*w-1 do self.i[j] := 0;
 end;
 
-procedure TileMap.fillRectRandom(indices: array of int; sx, sy, w, h: int);
+procedure TileMap.fillRectRandom(ifrom, ito: int; sx, sy, w, h: int);
 var
 	ind, x, y: int;
 begin
 	for y := sy to sy+h-1 do begin
 		for x := sx to sx+w-1 do begin
-			ind := indices[low(indices)+random(length(indices))];
+			ind := ifrom + random(ito-ifrom);
 			self.i[y*(self.width+self.skip) + x] := ind;
 		end;
 	end;
