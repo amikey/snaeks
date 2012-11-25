@@ -1,5 +1,8 @@
 unit drunk_ai;
 
+{$COPERATORS ON}
+{$PACKRECORDS C}
+
 interface
 uses SDL_types, player;
 
@@ -38,9 +41,19 @@ procedure drunkDecide(player: PlayerState);
 var
 	rnd, i: int;
 begin
-	rnd := random(3);
+	rnd := random(4);
 	{ rotate rnd times clockwise }
-	for i := 0 to rnd do rot(player);
+	i := 0;
+	while (i < 3) and (rnd <> 0) do begin
+		rot(player);
+		rnd -= 1;
+		
+		while player.world.isOccupied(player.x+player.vx, player.y+player.vy) do begin
+			rot(player);
+			i += 1;
+		end;
+	end;
+	
 	player.crawl();
 end;
 

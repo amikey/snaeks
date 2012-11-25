@@ -42,8 +42,7 @@ type
 		procedure addSegment(seg: playerSegment);
 		procedure addItem(item: Pickup);
 		
-		{ crawl makes the given player shift one tile immediately. }
-		{ The time counter is reset. }
+		{ crawl makes the given player shift one tile as soon as possible. }
 		procedure crawl();
 		
 		function occupies(xc, yc: int): boolean;
