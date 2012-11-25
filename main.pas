@@ -23,9 +23,7 @@ var
 	lastTime, dt: sint32;
 	world: WorldState;
 	
-begin
-	randomize();
-	
+begin	
 	pickupsInit();
 	
 	dirKeys[0] := knone;
@@ -92,6 +90,7 @@ end;
 var
 	status: int;
 begin
+	randomize();
 	SDL_Init(SDL_INIT_VIDEO);
 	screen := SDL_SetVideoMode(800, 480, 32, SDL_HWSURFACE);
 	if screen = nil then begin
