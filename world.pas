@@ -39,13 +39,18 @@ type
 implementation
 
 constructor WorldState.init();
+var tilesRaw: pSDL_Surface;
 begin
 	self.tiles := loadTiles('res/tilemap.png', 10, 10);
 	if self.tiles.sprite = nil then begin
 		writeln(stderr, SDL_GetError());
 		halt(1);
 	end;
-		
+	
+	tilesRaw := self.tiles.sprite;
+	self.tiles.sprite := SDL_DisplayFormatAlpha(tilesRaw);
+	SDL_FreeSurface(tilesRaw);
+	
 	self.map := TileMap.init(66, 39);
 	self.map.fillRectRandom(10, 18, 0, 0, 66, 39);
 end;
