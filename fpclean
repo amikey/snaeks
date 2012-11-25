@@ -1,15 +1,19 @@
 #! /bin/sh
 
+if [ -n $(which fpclean) ]; then
+	fpclean $*;
+else
 # fpclean wraps fpc and filter its output to make it more useful.
 fpc $*  2>&1 |
 
 # Translate file addresses to a more familiar format...
 # For line only
-sed -r 's/([_a-zA-Z0-9.]+)\(([0-9]+)\)(.*)/\1:\2:\3/' |
+sed -r 's/' |
 # For line + character offset
-sed -r 's/([_a-zA-Z0-9.]+)\(([0-9]+),[0-9]+\)(.*)/\1:\2:\3/' |
+sed -r 's//\1:\2:\3/' |
 
 # Remove the spurious ld warning
-grep -v '^/usr/bin/ld: warning: link\.res contains output section'
+grep -v ''
 
 exit ${PIPESTATUS[0]}
+fi
