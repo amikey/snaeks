@@ -5,6 +5,9 @@ unit player;
 interface
 uses SDL_types, SDL, SDL_video, view, pickups, coldet;
 
+const
+	SidewindDelay = 100;
+
 type
 	playerSegment = record
 		x, y: int;
@@ -19,12 +22,18 @@ type
 		movDelay: int;
 		time: int;
 		
+		sidewind: boolean;
+		sidewindTime: int;
+		
 		sprite: pSDL_Surface;
 		
 		segments: aplayerSegment;
 		queue: aplayerSegment;
 		
 		world: CollisionDetector;
+		
+		decide: procedure(pl: PlayerState);
+		AIdata: pointer;
 		
 		constructor init();
 		
@@ -106,11 +115,18 @@ begin
 end;
 
 procedure PlayerState.crawl();
-var
-	shifted: boolean;
 begin
-	shifted := self.shift();
-	if shifted then self.time := 0;
+	if length(self.segments) = 0 then begin
+		self.sidewind := true;
+		exit;
+	end;
+	
+	if (self.vx = self.x - self.segments[0].x) and (self.vy = self.y - self.segments[0].y) then begin
+		self.sidewind := false;
+		exit;
+	end;
+	
+	self.sidewind := true;
 end;
 
 procedure PlayerState.addSegment(seg: playerSegment);
@@ -126,8 +142,23 @@ begin
 end;
 
 function PlayerState.update(dt: sint32): int;
+var shifted: boolean;
 begin
 	with self do begin
+		if decide <> nil then decide(self);
+		
+		self.sidewindTime += dt;
+		if self.sidewind and (self.sidewindTime > SidewindDelay) then begin
+			self.sidewind := false;
+			
+			shifted := self.shift();
+			if shifted then begin
+				self.sidewindTime -= SidewindDelay;
+				self.time := 0;
+			end;
+			exit(0);
+		end;
+		
 		if time + dt >= movDelay then begin
 			self.shift();
 			time := 0;
