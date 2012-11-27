@@ -15,26 +15,26 @@ type
 	TileMap = class
 	public
 		i:      array of uint32;
-		skip:   sint32;           { Skip this many elements of `i` between lines. }
+		skip:   sint32;           // Skip this many elements of `i` between lines.
 		width:  sint32;
 		height: sint32;
 		
-		{ TileMap.init creates a new TileMap with the five width and height, }
-		{ with all indices initialized to 0. }
+		// TileMap.init creates a new TileMap with the five width and height,
+		// with all indices initialized to 0.
 		constructor init(w, h: int);
 		
-		{ fillRectRandom fills the given rectangle with indices in the range [ifrom, ito). }
+		// fillRectRandom fills the given rectangle with indices in the range [ifrom, ito).
 		procedure fillRectRandom(ifrom, ito: int; sx, sy, w, h: int);
 		
-		{ index returns the index at the given coordinates. }
+		// index returns the index at the given coordinates.
 		function index(x: sint32; y: sint32): uint32;
 		
 		function draw(sprites: TileSprites; dst: pSDL_Surface; view: ViewPort): int;
 	end;
 
-{ loadTiles loads tile sprites from the given file. }
-{ w and h are the number of columns and the number of rows of sprites in the file, respectively. }
-{ All tile sprites must have the same dimmensions. }
+// loadTiles loads tile sprites from the given file.
+// w and h are the number of columns and the number of rows of sprites in the file, respectively.
+// All tile sprites must have the same dimmensions.
 function loadTiles(fname: pchar; w, h: int): TileSprites;
 
 implementation

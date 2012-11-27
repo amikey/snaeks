@@ -24,7 +24,7 @@ type
 		procedure addPlayer(pl: PlayerState);
 		procedure addPickup(pu: Pickup);
 		
-		{ spawnPickupType spawns an item of the given type at a random position on the map. }
+		// spawnPickupType spawns an item of the given type at a random position on the map.
 		procedure spawnPickupType(typ: pPickupType);
 		
 		procedure update(dt: int);

@@ -42,7 +42,7 @@ type
 		procedure addSegment(seg: playerSegment);
 		procedure addItem(item: Pickup);
 		
-		{ crawl makes the given player shift one tile as soon as possible. }
+		// crawl makes the given player shift one tile as soon as possible.
 		procedure crawl();
 		
 		function occupies(xc, yc: int): boolean;
@@ -305,13 +305,13 @@ var
 	seg, tailSeg: PlayerSegment;
 	i: int;
 begin
-	{ draw the head }
+	// draw the head
 	srcRect := self.headRect();
 	dstRect.x := self.x * view.tileBase.w - view.pxOffset.x;
 	dstRect.y := self.y * view.tileBase.h - view.pxOffset.y;
 	SDL_BlitSurface(self.sprite, @srcRect, dst, @dstRect);
 	
-	{ draw the first segment }
+	// draw the first segment
 	if length(self.segments) >= 2 then begin
 		seg.x := self.x;
 		seg.y := self.y;
@@ -321,7 +321,7 @@ begin
 		SDL_BlitSurface(self.sprite, @srcRect, dst, @dstRect);
 	end;
 	
-	{ draw the other segments }
+	// draw the other segments
 	for i := 1 to high(self.segments)-1 do begin
 		srcRect := self.segmentRect(self.segments[i-1], self.segments[i], self.segments[i+1]);
 		dstRect.x := self.segments[i].x * view.tileBase.w - view.pxOffset.x;
@@ -329,7 +329,7 @@ begin
 		SDL_BlitSurface(self.sprite, @srcRect, dst, @dstRect);
 	end;
 	
-	{ draw the last segment }
+	// draw the last segment
 	if length(self.segments) <> 0 then begin
 		if length(self.segments) = 1 then begin
 			tailSeg := self.segments[0];

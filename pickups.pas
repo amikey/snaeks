@@ -46,19 +46,12 @@ var
 	rect: SDL_Rect;
 begin
 	with pickupFood do begin
-		{sprite := SDL_CreateRGBSurface(SDL_SWSURFACE or SDL_SRCALPHA, 12, 12, 32, 0, 0, 0, 0);}
 		sprite := IMG_Load('res/tilemap.png');
 		if sprite = nil then begin
 			writeln(stderr, SDL_GetError());
 			exit;
 		end;
 		
-		{rect.x := 3;
-		rect.y := 3;
-		rect.w := 6;
-		rect.h := 6;
-		SDL_FillRect(sprite, nil, SDL_MapRGBA(sprite^.format, 0, 0, 0, 0));
-		SDL_FillRect(sprite, @rect, SDL_MapRGBA(sprite^.format, 255, 255, 0, 255));}
 		sprite := SDL_DisplayFormatAlpha(sprite);
 	end;
 	
