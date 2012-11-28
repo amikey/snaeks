@@ -12,6 +12,13 @@ type
 	aPickup = array of Pickup;
 	aPlayerState = array of PlayerState;
 	
+	// WorldState keeps track of the state of an entire level.
+	//
+	// It's implemented as a class, because PlayerState needs to keep a reference to it (for collision detection)
+	// and inheriting from a virtual base class is a convenient way to do that.
+	// Using an interface would be even more convenient, but FPC for Linux (as of v2.6.0) has a bug
+	// which makes programs using interfaces fail to compile and requires manual patching of compiler
+	// sources to fix.
 	WorldState = class(CollisionDetector)
 	public
 		tiles: TileSprites;
