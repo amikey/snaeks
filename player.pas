@@ -14,8 +14,8 @@ type
 	end;
 	aplayerSegment = array of playerSegment;
 	
-	PlayerState = class
-	public
+	pPlayerState = ^PlayerState;
+	PlayerState = record
 		x, y: int;
 		vx, vy: int;
 		
@@ -27,31 +27,27 @@ type
 		
 		sprite: pSDL_Surface;
 		
-		segments: aplayerSegment;
+		segments: aPlayerSegment;
 		queue: aplayerSegment;
 		
 		world: CollisionDetector;
+		boundingRect: pSDL_Surface;
 		
-		decide: procedure(pl: PlayerState);
+		useDecide: boolean;
+		decide: procedure(pl: pPlayerState);
 		AIdata: pointer;
-		
-		constructor init();
-		
-		procedure draw(dst: pSDL_Surface; view: ViewPort);
-		function update(dt: sint32): int;
-		procedure addSegment(seg: playerSegment);
-		procedure addItem(item: Pickup);
-		
-		// crawl makes the given player shift one tile as soon as possible.
-		procedure crawl();
-		
-		function occupies(xc, yc: int): boolean;
-	private
-		function shift(): boolean;
-		function headRect(): SDL_Rect;
-		function segmentRect(prevSeg, seg, nextSeg: playerSegment): SDL_Rect;
-		function tailRect(dx, dy: int): SDL_Rect;
 	end;
+
+procedure drawPlayer(pl: pPlayerState; dst: pSDL_Surface; view: ViewPort);
+function updatePlayer(pl: pPlayerState; dt: sint32): int;
+
+procedure playerAddSegment(pl: pPlayerState; seg: playerSegment);
+procedure playerAddItem(pl: pPlayerState; item: Pickup);
+
+// crawl makes the given player shift one tile as soon as possible.
+procedure playerCrawl(pl: pPlayerState);
+
+function playerOccupies(pl: pPlayerState; xc, yc: int): boolean;
 
 implementation
 
@@ -75,21 +71,17 @@ begin
 	exit(ret);
 end;
 
-constructor PlayerState.init();
-begin
-end;
-
-function PlayerState.shift(): boolean;
+function shiftPlayer(pl: pPlayerState): boolean;
 var
 	i: int;
 	newseg: playerSegment;
 	nx, ny: int;
 begin
-	nx := self.x+self.vx;
-	ny := self.y+self.vy;
-	if self.world.isOccupied(nx, ny) then exit(false);
+	nx := pl^.x+pl^.vx;
+	ny := pl^.y+pl^.vy;
+	if pl^.world.isOccupied(nx, ny) then exit(false);
 	
-	with self do begin
+	with pl^ do begin
 		if length(queue) = 0 then begin
 			for i := high(segments) downto 1 do begin
 				segments[i].x := segments[i-1].x;
@@ -113,53 +105,53 @@ begin
 	end;
 end;
 
-procedure PlayerState.crawl();
+procedure playerCrawl(pl: pPlayerState);
 begin
-	if length(self.segments) = 0 then begin
-		self.sidewind := true;
+	if length(pl^.segments) = 0 then begin
+		pl^.sidewind := true;
 		exit;
 	end;
 	
-	if (self.vx = self.x - self.segments[0].x) and (self.vy = self.y - self.segments[0].y) then begin
-		self.sidewind := false;
+	if (pl^.vx = pl^.x - pl^.segments[0].x) and (pl^.vy = pl^.y - pl^.segments[0].y) then begin
+		pl^.sidewind := false;
 		exit;
 	end;
 	
-	self.sidewind := true;
+	pl^.sidewind := true;
 end;
 
-procedure PlayerState.addSegment(seg: playerSegment);
+procedure playerAddSegment(pl: pPlayerState; seg: playerSegment);
 begin
-	queueAdd(self.queue, seg);
+	queueAdd(pl^.queue, seg);
 end;
 
-procedure PlayerState.addItem(item: Pickup);
+procedure playerAddItem(pl: pPlayerState; item: Pickup);
 var
 	seg: playerSegment;
 begin
-	self.addSegment(seg);
+	playerAddSegment(pl, seg);
 end;
 
-function PlayerState.update(dt: sint32): int;
+function updatePlayer(pl: pPlayerState; dt: sint32): int;
 var shifted: boolean;
 begin
-	with self do begin
-		if decide <> nil then decide(self);
+	with pl^ do begin
+		if useDecide then decide(pl);
 		
-		self.sidewindTime += dt;
-		if self.sidewind and (self.sidewindTime > SidewindDelay) then begin
-			self.sidewind := false;
+		pl^.sidewindTime += dt;
+		if pl^.sidewind and (pl^.sidewindTime > SidewindDelay) then begin
+			pl^.sidewind := false;
 			
-			shifted := self.shift();
+			shifted := shiftPlayer(pl);
 			if shifted then begin
-				self.sidewindTime -= SidewindDelay;
-				self.time := 0;
+				pl^.sidewindTime -= SidewindDelay;
+				pl^.time := 0;
 			end;
 			exit(0);
 		end;
 		
 		if time + dt >= movDelay then begin
-			self.shift();
+			shiftPlayer(pl);
 			time := 0;
 			exit(dt - (movDelay - time));
 		end;
@@ -168,20 +160,20 @@ begin
 	end;
 end;
 
-function PlayerState.headRect(): SDL_Rect;
+function headRect(pl: pPlayerState): SDL_Rect;
 var
 	dx, dy: int;
 	ret: SDL_Rect;
 begin
-	ret.w := self.sprite^.w div 4;
-	ret.h := self.sprite^.h div 5;
+	ret.w := pl^.sprite^.w div 4;
+	ret.h := pl^.sprite^.h div 5;
 	
-	if length(self.segments) = 0 then begin
-		dx := -self.vx;
-		dy := -self.vy;
+	if length(pl^.segments) = 0 then begin
+		dx := -pl^.vx;
+		dy := -pl^.vy;
 	end else begin
-		dx := self.segments[0].x - self.x;
-		dy := self.segments[0].y - self.y;
+		dx := pl^.segments[0].x - pl^.x;
+		dy := pl^.segments[0].y - pl^.y;
 	end;
 	
 	with ret do begin
@@ -203,13 +195,13 @@ begin
 	end;
 end;
 
-function PlayerState.tailRect(dx, dy: int): SDL_Rect;
+function tailRect(pl: pPlayerState; dx, dy: int): SDL_Rect;
 var
 	ret: SDL_Rect;
 begin
 	with ret do begin
-		w := self.sprite^.w div 4;
-		h := self.sprite^.h div 5;
+		w := pl^.sprite^.w div 4;
+		h := pl^.sprite^.h div 5;
 		y := h * 4;
 		
 		if dx = 1 then begin
@@ -229,14 +221,14 @@ begin
 	end;
 end;
 
-function PlayerState.segmentRect(prevSeg, seg, nextSeg: playerSegment): SDL_Rect;
+function segmentRect(pl: pPlayerState; prevSeg, seg, nextSeg: playerSegment): SDL_Rect;
 var
 	ret: SDL_Rect;
 	pdx, pdy, ndx, ndy: int;
 begin
 	with ret do begin
-		w := self.sprite^.w div 4;
-		h := self.sprite^.h div 5;
+		w := pl^.sprite^.w div 4;
+		h := pl^.sprite^.h div 5;
 		
 		pdx := seg.x - prevSeg.x;
 		pdy := seg.y - prevSeg.y;
@@ -299,58 +291,58 @@ begin
 	end;
 end;
 	
-procedure PlayerState.draw(dst: pSDL_Surface; view: ViewPort);
+procedure drawPlayer(pl: pPlayerState; dst: pSDL_Surface; view: ViewPort);
 var
 	srcRect, dstRect: SDL_Rect;
 	seg, tailSeg: PlayerSegment;
 	i: int;
 begin
 	// draw the head
-	srcRect := self.headRect();
-	dstRect.x := self.x * view.tileBase.w - view.pxOffset.x;
-	dstRect.y := self.y * view.tileBase.h - view.pxOffset.y;
-	SDL_BlitSurface(self.sprite, @srcRect, dst, @dstRect);
+	srcRect := headRect(pl);
+	dstRect.x := pl^.x * view.tileBase.w - view.pxOffset.x;
+	dstRect.y := pl^.y * view.tileBase.h - view.pxOffset.y;
+	SDL_BlitSurface(pl^.sprite, @srcRect, dst, @dstRect);
 	
 	// draw the first segment
-	if length(self.segments) >= 2 then begin
-		seg.x := self.x;
-		seg.y := self.y;
-		srcRect := self.segmentRect(seg, self.segments[0], self.segments[1]);
-		dstRect.x := self.segments[0].x * view.tileBase.w - view.pxOffset.x;
-		dstRect.y := self.segments[0].y * view.tileBase.h - view.pxOffset.y;
-		SDL_BlitSurface(self.sprite, @srcRect, dst, @dstRect);
+	if length(pl^.segments) >= 2 then begin
+		seg.x := pl^.x;
+		seg.y := pl^.y;
+		srcRect := segmentRect(pl, seg, pl^.segments[0], pl^.segments[1]);
+		dstRect.x := pl^.segments[0].x * view.tileBase.w - view.pxOffset.x;
+		dstRect.y := pl^.segments[0].y * view.tileBase.h - view.pxOffset.y;
+		SDL_BlitSurface(pl^.sprite, @srcRect, dst, @dstRect);
 	end;
 	
 	// draw the other segments
-	for i := 1 to high(self.segments)-1 do begin
-		srcRect := self.segmentRect(self.segments[i-1], self.segments[i], self.segments[i+1]);
-		dstRect.x := self.segments[i].x * view.tileBase.w - view.pxOffset.x;
-		dstRect.y := self.segments[i].y * view.tileBase.h - view.pxOffset.y;
-		SDL_BlitSurface(self.sprite, @srcRect, dst, @dstRect);
+	for i := 1 to high(pl^.segments)-1 do begin
+		srcRect := segmentRect(pl, pl^.segments[i-1], pl^.segments[i], pl^.segments[i+1]);
+		dstRect.x := pl^.segments[i].x * view.tileBase.w - view.pxOffset.x;
+		dstRect.y := pl^.segments[i].y * view.tileBase.h - view.pxOffset.y;
+		SDL_BlitSurface(pl^.sprite, @srcRect, dst, @dstRect);
 	end;
 	
 	// draw the last segment
-	if length(self.segments) <> 0 then begin
-		if length(self.segments) = 1 then begin
-			tailSeg := self.segments[0];
-			srcRect := self.tailRect(tailSeg.x-self.x, tailSeg.y-self.y);
+	if length(pl^.segments) <> 0 then begin
+		if length(pl^.segments) = 1 then begin
+			tailSeg := pl^.segments[0];
+			srcRect := tailRect(pl, tailSeg.x-pl^.x, tailSeg.y-pl^.y);
 		end else begin
-			tailSeg := self.segments[high(self.segments)];
-			seg := self.segments[high(self.segments)-1];
-			srcRect := self.tailRect(tailSeg.x-seg.x, tailSeg.y-seg.y);
+			tailSeg := pl^.segments[high(pl^.segments)];
+			seg := pl^.segments[high(pl^.segments)-1];
+			srcRect := tailRect(pl, tailSeg.x-seg.x, tailSeg.y-seg.y);
 		end;
 		
 		dstRect.x := tailSeg.x * view.tileBase.w - view.pxOffset.x;
 		dstRect.y := tailSeg.y * view.tileBase.h - view.pxOffset.y;
-		SDL_BlitSurface(self.sprite, @srcRect, dst, @dstRect);
+		SDL_BlitSurface(pl^.sprite, @srcRect, dst, @dstRect);
 	end;
 end;
 
-function PlayerState.occupies(xc, yc: int): boolean;
+function playerOccupies(pl: pPlayerState; xc, yc: int): boolean;
 var
 	seg: PlayerSegment;
 begin
-	for seg in self.segments do begin
+	for seg in pl^.segments do begin
 		if (seg.x = xc) and (seg.y = yc) then exit(true);
 	end;
 	exit(false);

@@ -6,38 +6,38 @@ unit drunk_ai;
 interface
 uses SDL_types, player;
 
-procedure drunkDecide(player: PlayerState);
+procedure drunkDecide(player: pPlayerState);
 
 implementation
 
 // rot rotates the player 90º clockwise.
-procedure rot(pl: PlayerState);
+procedure rot(pl: pPlayerState);
 begin
-	if pl.vx = 1 then begin
-		pl.vx := 0;
-		pl.vy := 1;
+	if pl^.vx = 1 then begin
+		pl^.vx := 0;
+		pl^.vy := 1;
 		exit;
 	end;
 	
-	if pl.vy = 1 then begin
-		pl.vy := 0;
-		pl.vx := -1;
+	if pl^.vy = 1 then begin
+		pl^.vy := 0;
+		pl^.vx := -1;
 		exit;
 	end;
 	
-	if pl.vx = -1 then begin
-		pl.vx := 0;
-		pl.vy := -1;
+	if pl^.vx = -1 then begin
+		pl^.vx := 0;
+		pl^.vy := -1;
 		exit;
 	end;
 	
-	//if pl.vy = -1 then begin
-	pl.vy := 0;
-	pl.vx := 1;
+	//if pl^.vy = -1 then begin
+	pl^.vy := 0;
+	pl^.vx := 1;
 	//end;
 end;
 
-procedure drunkDecide(player: PlayerState);
+procedure drunkDecide(player: pPlayerState);
 var
 	rnd, i: int;
 begin
@@ -48,13 +48,13 @@ begin
 		rot(player);
 		rnd -= 1;
 		
-		while player.world.isOccupied(player.x+player.vx, player.y+player.vy) do begin
+		while player^.world.isOccupied(player^.x+player^.vx, player^.y+player^.vy) do begin
 			rot(player);
 			i += 1;
 		end;
 	end;
 	
-	player.crawl();
+	playerCrawl(player);
 end;
 
 end.

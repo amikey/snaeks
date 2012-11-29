@@ -10,7 +10,7 @@ const
 	kleft  = 3;
 	kright = 4;
 
-procedure processKeyEvent(ev: SDL_Event; var kqueue: array of int; player: PlayerState);
+procedure processKeyEvent(ev: SDL_Event; var kqueue: array of int; player: pPlayerState);
 
 implementation
 
@@ -46,12 +46,12 @@ begin
 	end;
 end;
 
-function backwards(pl: PlayerState; dir: int): boolean;
+function backwards(pl: pPlayerState; dir: int): boolean;
 var
 	x, y: int;
 	seg: playerSegment;
 begin
-	if length(pl.segments) = 0 then exit(false);
+	if length(pl^.segments) = 0 then exit(false);
 	
 	x := 0;
 	y := 0;
@@ -63,33 +63,33 @@ begin
 	kdown: y := 1;
 	end;
 	
-	seg := pl.segments[0];
-	exit((seg.x = pl.x + x) and (seg.y = pl.y + y));
+	seg := pl^.segments[0];
+	exit((seg.x = pl^.x + x) and (seg.y = pl^.y + y));
 end;
 
-procedure setVel(pl: PlayerState; kqueue: array of int);
+procedure setVel(pl: pPlayerState; kqueue: array of int);
 var i: int;
 begin
 	for i := 3 downto 0 do begin
 		if not backwards(pl, kqueue[i]) then case kqueue[i] of
 		kleft: begin
-			pl.vx := -1;
-			pl.vy :=  0;
+			pl^.vx := -1;
+			pl^.vy :=  0;
 			exit;
 		end;
 		kright: begin
-			pl.vx :=  1;
-			pl.vy :=  0;
+			pl^.vx :=  1;
+			pl^.vy :=  0;
 			exit;
 		end;
 		kup: begin
-			pl.vx :=  0;
-			pl.vy := -1;
+			pl^.vx :=  0;
+			pl^.vy := -1;
 			exit;
 		end;
 		kdown: begin
-			pl.vx :=  0;
-			pl.vy :=  1;
+			pl^.vx :=  0;
+			pl^.vy :=  1;
 			exit;
 		end;
 		knone:
@@ -97,7 +97,7 @@ begin
 	end;
 end;
 
-procedure processKeyEvent(ev: SDL_Event; var kqueue: array of int; player: PlayerState);
+procedure processKeyEvent(ev: SDL_Event; var kqueue: array of int; player: pPlayerState);
 var
 	oldvx, oldvy: int;
 begin
@@ -118,10 +118,10 @@ begin
 		end;
 	end;
 	
-	oldvx := player.vx;
-	oldvy := player.vy;
+	oldvx := player^.vx;
+	oldvy := player^.vy;
 	setVel(player, kqueue);
-	if (player.vx <> oldvx) or (player.vy <> oldvy) then player.crawl();
+	if (player^.vx <> oldvx) or (player^.vy <> oldvy) then playerCrawl(player);
 end;
 
 end.

@@ -33,14 +33,14 @@ begin
 	
 	world := WorldState.init();
 	
-	player := PlayerState.init();
 	player.x := 2;
 	player.y := 2;
 	player.vx := 1;
 	player.vy := 0;
 	player.movDelay := 300;
 	player.time := 0;
-	for i := 1 to 6 do player.addSegment(seg);	
+	player.useDecide := false;
+	for i := 1 to 6 do playerAddSegment(@player, seg);	
 
 	player.sprite := IMG_Load('res/snake.png');
 	if player.sprite = nil then begin
@@ -50,24 +50,24 @@ begin
 	
 	player.sprite := SDL_DisplayFormatAlpha(player.sprite);
 	
-	world.addPlayer(player);
+	world.addPlayer(@player);
 	
 	
-	player2 := PlayerState.init();
 	player2.x := 20;
 	player2.y := 20;
 	player2.vx := -1;
 	player2.vy := 0;
 	player2.movDelay := 300;
 	player2.time := 0;
-	for i := 1 to 6 do player2.addSegment(seg);
+	for i := 1 to 6 do playerAddSegment(@player2, seg);
 	
-	player2.decide := @drunkDecide;	
+	player2.decide := @drunkDecide;
+	player2.useDecide := true;
 	
 	player2.sprite := SDL_DisplayFormatAlpha(player.sprite);
 	mapColorsRGB(player2.sprite, SnakeCMapGreen , SnakeCMapBlue);
 	
-	world.addPlayer(player2);
+	world.addPlayer(@player2);
 
 	for i := 0 to 5 do world.spawnPickupType(@pickupFood);
 		
@@ -80,10 +80,10 @@ begin
 			if gotevent <> 0 then begin
 				case ev.eventtype of
 				SDL_KEYDOWN:
-					processKeyEvent(ev, dirKeys, player);
+					processKeyEvent(ev, dirKeys, @player);
 				SDL_KEYUP:
 					if ev.key.keysym.sym = SDLK_ESCAPE then exit(0)
-					else processKeyEvent(ev, dirKeys, player);
+					else processKeyEvent(ev, dirKeys, @player);
 				SDL_EVENTQUIT:
 					exit(0);
 				end;
