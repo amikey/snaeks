@@ -13,115 +13,112 @@ type
 	apPlayerState = array of pPlayerState;
 	
 	// WorldState keeps track of the state of an entire level.
-	//
-	// It's implemented as a class, because pPlayerState needs to keep a reference to it (for collision detection)
-	// and inheriting from a virtual base class is a convenient way to do that.
-	// Using an interface would be even more convenient, but FPC for Linux (as of v2.6.0) has a bug
-	// which makes programs using interfaces fail to compile and requires manual patching of compiler
-	// sources to fix.
-	WorldState = class(CollisionDetector)
-	public
+	pWorldState = ^WorldState;
+	WorldState = record 
 		tiles: TileSprites;
 		map: TileMap;
 		pickups: aPickup;
 		players: apPlayerState;
-		
-		constructor init();
-		
-		procedure addPlayer(pl: pPlayerState);
-		procedure addPickup(pu: Pickup);
-		
-		// spawnPickupType spawns an item of the given type at a random position on the map.
-		procedure spawnPickupType(typ: pPickupType);
-		
-		procedure update(dt: int);
-		procedure draw(screen: pSDL_Surface);
-		
-		function isOccupied(x, y: int): boolean; override;
-		
-	private
-		procedure handlePlayer(pl: pPlayerState);
 	end;
+
+function newWorld(): pWorldState;
+
+procedure worldAddPlayer(world: pWorldState; pl: pPlayerState);
+procedure worldAddPickup(world: pWorldState; pu: Pickup);
+
+// spawnPickupType spawns an item of the given type at a random position on the map.
+procedure spawnPickupType(world: pWorldState; typ: pPickupType);
+
+procedure updateWorld(world: pWorldState; dt: int);
+procedure drawWorld(world: pWorldState; screen: pSDL_Surface);
+
+function isOccupied(world: pointer; x, y: int): boolean;
 
 implementation
 
-constructor WorldState.init();
-var tilesRaw: pSDL_Surface;
+function newWorld(): pWorldState;
+var
+	tilesRaw: pSDL_Surface;
+	world: pWorldState;
 begin
-	self.tiles := loadTiles('res/tilemap.png', 10, 10);
-	if self.tiles.sprite = nil then begin
+	new(world);
+	world^.tiles := loadTiles('res/tilemap.png', 10, 10);
+	if world^.tiles.sprite = nil then begin
 		writeln(stderr, SDL_GetError());
 		halt(1);
 	end;
 	
-	tilesRaw := self.tiles.sprite;
-	self.tiles.sprite := SDL_DisplayFormatAlpha(tilesRaw);
+	tilesRaw := world^.tiles.sprite;
+	world^.tiles.sprite := SDL_DisplayFormatAlpha(tilesRaw);
 	SDL_FreeSurface(tilesRaw);
 	
-	self.map := TileMap.init(66, 39);
-	self.map.fillRectRandom(10, 18, 0, 0, 66, 39);
+	world^.map := TileMap.init(66, 39);
+	world^.map.fillRectRandom(10, 18, 0, 0, 66, 39);
+	exit(world);
 end;
 
-procedure WorldState.addPlayer(pl: pPlayerState);
+procedure worldAddPlayer(world: pWorldState; pl: pPlayerState);
 begin
-	pl^.world := self;
-	setLength(self.players, length(self.players)+1);
-	self.players[high(self.players)] := pl;
+	pl^.world := pointer(world);
+	pl^.isOccupied := @isOccupied;
+	
+	setLength(world^.players, length(world^.players)+1);
+	world^.players[high(world^.players)] := pl;
 end;
 
-procedure WorldState.addPickup(pu: Pickup);
+procedure worldAddPickup(world: pWorldState; pu: Pickup);
 begin
-	setLength(self.pickups, length(self.pickups)+1);
-	self.pickups[high(self.pickups)] := pu;
+	setLength(world^.pickups, length(world^.pickups)+1);
+	world^.pickups[high(world^.pickups)] := pu;
 end;
 
-procedure WorldState.spawnPickupType(typ: pPickupType);
+procedure spawnPickupType(world: pWorldState; typ: pPickupType);
 var
 	pu: Pickup;
 begin
-	pu.x := random(self.map.width);
-	pu.y := random(self.map.height);
+	pu.x := random(world^.map.width);
+	pu.y := random(world^.map.height);
 	
 	pu.typ := typ;
 	
-	self.addPickup(pu);
+	worldAddPickup(world, pu);
 end;
 
-procedure WorldState.handlePlayer(pl: pPlayerState);
+procedure handlePlayer(world: pWorldState; pl: pPlayerState);
 var
 	item: Pickup;
 	i, j: int;
 begin
-	for i := 0 to high(self.pickups) do begin
-		item := self.pickups[i];
+	for i := 0 to high(world^.pickups) do begin
+		item := world^.pickups[i];
 		if (item.x = pl^.x) and (item.y = pl^.y) then begin
 			playerAddItem(pl, item);
 			
-			for j := i to high(self.pickups)-1 do begin
-				self.pickups[j] := self.pickups[j+1];
+			for j := i to high(world^.pickups)-1 do begin
+				world^.pickups[j] := world^.pickups[j+1];
 			end;
-			setLength(self.pickups, length(self.pickups)-1);
+			setLength(world^.pickups, length(world^.pickups)-1);
 			
-			self.spawnPickupType(@pickupFood);
+			spawnPickupType(world, @pickupFood);
 		end;
 	end;
 end;
 
-procedure WorldState.update(dt: int);
+procedure updateWorld(world: pWorldState; dt: int);
 var
 	tRemaining: int;
 	pl: pPlayerState;
 begin
-	for pl in self.players do begin
+	for pl in world^.players do begin
 		tRemaining := dt;
 		while tRemaining > 0 do begin
 			tRemaining := updatePlayer(pl, tRemaining);
-			self.handlePlayer(pl);
+			handlePlayer(world, pl);
 		end;
 	end;
 end;
 
-procedure WorldState.draw(screen: pSDL_Surface);
+procedure drawWorld(world: pWorldState; screen: pSDL_Surface);
 var
 	pu: Pickup;
 	pl: pPlayerState;
@@ -134,16 +131,16 @@ begin
 	view.tileBase.w := 12;
 	view.tileBase.h := 12;
 	
-	self.map.draw(self.tiles, screen, view);
-	for pu in self.pickups do drawPickup(pu, screen, view);
-	for pl in self.players do drawPlayer(pl, screen, view);
+	world^.map.draw(world^.tiles, screen, view);
+	for pu in world^.pickups do drawPickup(pu, screen, view);
+	for pl in world^.players do drawPlayer(pl, screen, view);
 end;
 
-function WorldState.isOccupied(x, y: int): boolean;
+function isOccupied(world: pointer; x, y: int): boolean;
 var
 	pl: pPlayerState;
 begin
-	for pl in self.players do begin
+	for pl in pWorldState(world)^.players do begin
 		if playerOccupies(pl, x, y) then exit(true);
 	end;
 	exit(false);

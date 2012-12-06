@@ -48,7 +48,7 @@ begin
 		rot(player);
 		rnd -= 1;
 		
-		while player^.world.isOccupied(player^.x+player^.vx, player^.y+player^.vy) and (i < 3) do begin
+		while player^.isOccupied(player^.world, player^.x+player^.vx, player^.y+player^.vy) and (i < 3) do begin
 			rot(player);
 			i += 1;
 		end;

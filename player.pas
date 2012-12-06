@@ -30,7 +30,9 @@ type
 		segments: aPlayerSegment;
 		queue: aplayerSegment;
 		
-		world: CollisionDetector;
+		world: pointer;
+		isOccupied: function(world: pointer; x, y: int):boolean;
+		
 		boundingRect: pSDL_Surface;
 		
 		useDecide: boolean;
@@ -79,7 +81,7 @@ var
 begin
 	nx := pl^.x+pl^.vx;
 	ny := pl^.y+pl^.vy;
-	if pl^.world.isOccupied(nx, ny) then exit(false);
+	if pl^.isOccupied(pl^.world, nx, ny) then exit(false);
 	
 	with pl^ do begin
 		if length(queue) = 0 then begin

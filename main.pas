@@ -23,7 +23,7 @@ var
 	dirKeys: array[0..3] of int;
 	
 	lastTime, lastFrame, dt: sint32;
-	world: WorldState;
+	world: pWorldState;
 	
 	delay: int;
 		
@@ -35,7 +35,7 @@ begin
 	dirKeys[2] := knone;
 	dirKeys[3] := knone;
 	
-	world := WorldState.init();
+	world := newWorld();
 	
 	player.x := 2;
 	player.y := 2;
@@ -44,7 +44,7 @@ begin
 	player.movDelay := 300;
 	player.time := 0;
 	player.useDecide := false;
-	for i := 1 to 6 do playerAddSegment(@player, seg);	
+	for i := 1 to 6 do playerAddSegment(@player, seg);
 
 	player.sprite := IMG_Load('res/snake.png');
 	if player.sprite = nil then begin
@@ -54,7 +54,7 @@ begin
 	
 	player.sprite := SDL_DisplayFormatAlpha(player.sprite);
 	
-	world.addPlayer(@player);
+	worldAddPlayer(world, @player);
 	
 	
 	player2.x := 20;
@@ -71,9 +71,9 @@ begin
 	player2.sprite := SDL_DisplayFormatAlpha(player.sprite);
 	mapColorsRGB(player2.sprite, SnakeCMapGreen , SnakeCMapBlue);
 	
-	world.addPlayer(@player2);
+	worldAddPlayer(world, @player2);
 
-	for i := 0 to 5 do world.spawnPickupType(@pickupFood);
+	for i := 0 to 5 do spawnPickupType(world, @pickupFood);
 		
 	lastTime := SDL_GetTicks();
 	lastFrame := lastTime;
@@ -96,11 +96,11 @@ begin
 		dt := SDL_GetTicks() - lastTime;
 		lastTime := SDL_GetTicks();
 		
-		world.update(dt);
+		updateWorld(world, dt);
 		
 		err := SDL_FillRect(screen, nil, $00000000);
 		if err <> 0 then exit(err);
-		world.draw(screen);
+		drawWorld(world, screen);
 		SDL_UpdateRect(screen, 0, 0, 0, 0);
 		
 		delay := framedelay - (SDL_GetTicks() - lastFrame - framedelay);
