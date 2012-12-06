@@ -342,6 +342,8 @@ function playerOccupies(pl: pPlayerState; xc, yc: int): boolean;
 var
 	seg: PlayerSegment;
 begin
+	if (pl^.x = xc) and (pl^.y = yc) then exit(true);
+	
 	for seg in pl^.segments do begin
 		if (seg.x = xc) and (seg.y = yc) then exit(true);
 	end;
