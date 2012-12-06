@@ -5,7 +5,7 @@ uses SDL_types, SDL, SDL_video;
 
 const
 	SnakeColorBody  = $ff21c821;
-	SnakeColorEdgeD = $ff61d561;
+	SnakeColorEdgeD = $ff2a8c2a;
 	SnakeColorEdgeL = $ff88ff88;
 	SnakeColorEyes  = $fffff854;
 	
