@@ -3,6 +3,8 @@ uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, SDL_image, 
 {$COPERATORS ON}
 {$PACKRECORDS C}
 
+const
+	framedelay: int = 1000 div 40;
 var
 	screen: pSDL_Surface;
 
@@ -20,12 +22,14 @@ var
 	
 	dirKeys: array[0..3] of int;
 	
-	lastTime, dt: sint32;
+	lastTime, lastFrame, dt: sint32;
 	world: WorldState;
 	
+	delay: int;
+		
 begin	
 	pickupsInit();
-	
+		
 	dirKeys[0] := knone;
 	dirKeys[1] := knone;
 	dirKeys[2] := knone;
@@ -72,10 +76,9 @@ begin
 	for i := 0 to 5 do world.spawnPickupType(@pickupFood);
 		
 	lastTime := SDL_GetTicks();
+	lastFrame := lastTime;
 		
-	while true do begin
-		SDL_Delay(20);
-		
+	while true do begin	
 		while SDL_PollEvent(@ev) <> 0 do begin
 			if gotevent <> 0 then begin
 				case ev.eventtype of
@@ -89,18 +92,25 @@ begin
 				end;
 			end;
 		end;
-				
+		
 		dt := SDL_GetTicks() - lastTime;
+		lastTime := SDL_GetTicks();
 		
 		world.update(dt);
-		lastTime := SDL_GetTicks();
 		
 		err := SDL_FillRect(screen, nil, $00000000);
 		if err <> 0 then exit(err);
 		world.draw(screen);
 		SDL_UpdateRect(screen, 0, 0, 0, 0);
+		
+		delay := framedelay - (SDL_GetTicks() - lastFrame - framedelay);
+		if delay < 0 then delay := 0;
+		
 		err := SDL_Flip(screen);
 		if err <> 0 then exit(err);
+		
+		lastFrame := SDL_GetTicks();
+		SDL_Delay(delay);
 	end;
 end;
 
