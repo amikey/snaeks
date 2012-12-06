@@ -125,6 +125,8 @@ begin
 		exit;
 	end;
 	
+	SDL_WM_SetCaption('snaeks', 'snaeks');
+	
 	status := mainLoop();
 	if status <> 0 then writeln(StdErr, SDL_GetError());
 	

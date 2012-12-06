@@ -81,6 +81,10 @@ unit SDL;
   procedure SDL_Quit;cdecl;
   
   function SDL_GetError(): pchar;cdecl;
+  
+// following stuff added by Paweł Stępień <pvl.staven@gmail.com>
+
+procedure SDL_WM_SetCaption(title, caption: pchar); cdecl;
 
   implementation
 
@@ -98,4 +102,9 @@ unit SDL;
   procedure SDL_Quit;cdecl;external 'SDL';
   
   function SDL_GetError(): pchar;cdecl;external 'SDL';
+
+// following stuff added by Paweł Stępień <pvl.staven@gmail.com>
+
+procedure SDL_WM_SetCaption(title, caption: pchar); cdecl; external 'SDL';
+
 end.
