@@ -3,7 +3,7 @@ unit player;
 {$COPERATORS ON}
 
 interface
-uses SDL_types, SDL, SDL_video, view, pickups, coldet;
+uses SDL_types, SDL, SDL_video, view, pickups;
 
 const
 	SidewindDelay = 100;

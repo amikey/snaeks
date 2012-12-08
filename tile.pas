@@ -12,30 +12,30 @@ type
 		rects: array of SDL_Rect;
 	end;
 	
-	TileMap = class
-	public
+	pTileMap = ^TileMap;
+	TileMap = record
 		i:      array of uint32;
 		skip:   sint32;           // Skip this many elements of `i` between lines.
 		width:  sint32;
 		height: sint32;
-		
-		// TileMap.init creates a new TileMap with the five width and height,
-		// with all indices initialized to 0.
-		constructor init(w, h: int);
-		
-		// fillRectRandom fills the given rectangle with indices in the range [ifrom, ito).
-		procedure fillRectRandom(ifrom, ito: int; sx, sy, w, h: int);
-		
-		// index returns the index at the given coordinates.
-		function index(x: sint32; y: sint32): uint32;
-		
-		function draw(sprites: TileSprites; dst: pSDL_Surface; view: ViewPort): int;
 	end;
+
+// newTileMap creates a new TileMap with the given width and height,
+// with all indices initialized to 0.
+function newTileMap(w, h: int): pTileMap;
 
 // loadTiles loads tile sprites from the given file.
 // w and h are the number of columns and the number of rows of sprites in the file, respectively.
 // All tile sprites must have the same dimmensions.
 function loadTiles(fname: pchar; w, h: int): TileSprites;
+
+// TMfillRectRandom fills the given rectangle with indices in the range [ifrom, ito).
+procedure TMfillRectRandom(tm: pTileMap; ifrom, ito: int; sx, sy, w, h: int);
+		
+// TMindex returns the index at the given coordinates.
+function TMindex(tm: pTileMap; x: sint32; y: sint32): uint32;
+		
+function TMdraw(tm: pTileMap; sprites: TileSprites; dst: pSDL_Surface; view: ViewPort): int;
 
 implementation
 
@@ -65,34 +65,38 @@ begin
 	exit(tiles);
 end;
 
-constructor TileMap.init(w, h: int);
-var j: int;
+function newTileMap(w, h: int): pTileMap;
+var
+	j: int;
+	tm: pTileMap;
 begin
-	setLength(self.i, w*h);
-	self.width := w;
-	self.height := h;
-	self.skip := 0;
-	for j := 0 to h*w-1 do self.i[j] := 0;
+	new(tm);
+	setLength(tm^.i, w*h);
+	tm^.width := w;
+	tm^.height := h;
+	tm^.skip := 0;
+	for j := 0 to h*w-1 do tm^.i[j] := 0;
+	exit(tm);
 end;
 
-procedure TileMap.fillRectRandom(ifrom, ito: int; sx, sy, w, h: int);
+procedure TMfillRectRandom(tm: pTileMap; ifrom, ito: int; sx, sy, w, h: int);
 var
 	ind, x, y: int;
 begin
 	for y := sy to sy+h-1 do begin
 		for x := sx to sx+w-1 do begin
 			ind := ifrom + random(ito-ifrom);
-			self.i[y*(self.width+self.skip) + x] := ind;
+			tm^.i[y*(tm^.width+tm^.skip) + x] := ind;
 		end;
 	end;
 end;
 
-function TileMap.index(x: sint32; y: sint32): uint32;
+function TMindex(tm: pTileMap; x: sint32; y: sint32): uint32;
 begin
-	exit(self.i[y*(self.width+self.skip) + x]);
+	exit(tm^.i[y*(tm^.width+tm^.skip) + x]);
 end;
 
-function TileMap.draw(sprites: TileSprites; dst: pSDL_Surface; view: ViewPort): int;
+function TMdraw(tm: pTileMap; sprites: TileSprites; dst: pSDL_Surface; view: ViewPort): int;
 var
 	x, y: int;
 	startx, starty, endx, endy: int;
@@ -105,12 +109,12 @@ begin
 	endx := ceil(startx + view.pxOffset.w/view.tileBase.w);
 	endy := ceil(starty + view.pxOffset.h/view.tileBase.h);
 	
-	if endx > self.width then endx := self.width-1;
-	if endy > self.height then endy := self.height-1;
+	if endx > tm^.width then endx := tm^.width-1;
+	if endy > tm^.height then endy := tm^.height-1;
 
 	for y := starty to endy do begin
 		for x := startx to endx do begin
-			ind := self.index(x, y);
+			ind := TMindex(tm, x, y);
 			if (ind < 0) or (ind > high(sprites.rects)) then begin
 				exit(TM_INVALID_TILE_INDEX);
 			end;

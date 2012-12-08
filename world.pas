@@ -1,7 +1,7 @@
 unit world;
 
 interface
-uses sdl_types, SDL, SDL_video, SDL_image, tile, player, pickups, view, coldet;
+uses sdl_types, SDL, SDL_video, SDL_image, tile, player, pickups, view;
 
 const
 	TileEmpty = 1;
@@ -16,7 +16,7 @@ type
 	pWorldState = ^WorldState;
 	WorldState = record 
 		tiles: TileSprites;
-		map: TileMap;
+		map: pTileMap;
 		pickups: aPickup;
 		players: apPlayerState;
 	end;
@@ -52,8 +52,8 @@ begin
 	world^.tiles.sprite := SDL_DisplayFormatAlpha(tilesRaw);
 	SDL_FreeSurface(tilesRaw);
 	
-	world^.map := TileMap.init(66, 39);
-	world^.map.fillRectRandom(10, 18, 0, 0, 66, 39);
+	world^.map := newTileMap(66, 39);
+	TMfillRectRandom(world^.map, 10, 18, 0, 0, 66, 39);
 	exit(world);
 end;
 
@@ -76,8 +76,8 @@ procedure spawnPickupType(world: pWorldState; typ: pPickupType);
 var
 	pu: Pickup;
 begin
-	pu.x := random(world^.map.width);
-	pu.y := random(world^.map.height);
+	pu.x := random(world^.map^.width);
+	pu.y := random(world^.map^.height);
 	
 	pu.typ := typ;
 	
@@ -131,7 +131,7 @@ begin
 	view.tileBase.w := 12;
 	view.tileBase.h := 12;
 	
-	world^.map.draw(world^.tiles, screen, view);
+	TMdraw(world^.map, world^.tiles, screen, view);
 	for pu in world^.pickups do drawPickup(pu, screen, view);
 	for pl in world^.players do drawPlayer(pl, screen, view);
 end;
