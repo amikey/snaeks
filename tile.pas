@@ -49,12 +49,13 @@ var
 	x, y: int;
 begin
 	rawSprite := IMG_Load(fname);
-	if RawSprite = nil then begin
+	if rawSprite = nil then begin
 		tiles.sprite := nil;
 		exit(tiles);
 	end;
 	
 	tiles.sprite := SDL_DisplayFormatAlpha(rawSprite);
+	SDL_FreeSurface(rawSprite);
 	if tiles.sprite = nil then begin
 		exit(tiles);
 	end;

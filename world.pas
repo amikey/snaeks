@@ -1,7 +1,7 @@
 unit world;
 
 interface
-uses sdl_types, SDL, SDL_video, SDL_image, tile, player, pickups, view;
+uses sdl_types, SDL, SDL_video, SDL_image, tile, player, pickups, view, resources;
 
 const
 	TileEmpty = 1;
@@ -15,7 +15,6 @@ type
 	// WorldState keeps track of the state of an entire level.
 	pWorldState = ^WorldState;
 	WorldState = record 
-		tiles: TileSprites;
 		map: pTileMap;
 		pickups: aPickup;
 		players: apPlayerState;
@@ -34,20 +33,15 @@ procedure drawWorld(world: pWorldState; screen: pSDL_Surface);
 
 function isOccupied(world: pointer; x, y: int): boolean;
 
+procedure cleanupWorld(world: pWorldState);
+
 implementation
 
 function newWorld(): pWorldState;
 var
-	tilesRaw: pSDL_Surface;
 	world: pWorldState;
 begin
 	new(world);
-	world^.tiles := loadTiles('res/tilemap.png', 10, 10);
-	if world^.tiles.sprite = nil then begin
-		writeln(stderr, SDL_GetError());
-		halt(1);
-	end;
-	
 	world^.map := newTileMap(66, 39);
 	TMfillRectRandom(world^.map, 10, 18, 0, 0, 66, 39);
 	exit(world);
@@ -127,7 +121,7 @@ begin
 	view.tileBase.w := 12;
 	view.tileBase.h := 12;
 	
-	TMdraw(world^.map, world^.tiles, screen, view);
+	TMdraw(world^.map, res.tiles, screen, view);
 	for pu in world^.pickups do drawPickup(pu, screen, view);
 	for pl in world^.players do drawPlayer(pl, screen, view);
 end;
@@ -142,4 +136,12 @@ begin
 	exit(false);
 end;
 
+procedure cleanupWorld(world: pWorldState);
+var
+	pl: pPlayerState;
+begin
+	for pl in world^.players do cleanupPlayer(pl);
+end;
+
 end.
+

@@ -7,6 +7,7 @@ interface
 uses SDL_types, player;
 
 procedure drunkDecide(player: pPlayerState);
+procedure drunkCleanup(pt: pointer);
 
 implementation
 
@@ -56,5 +57,7 @@ begin
 	
 	playerCrawl(player);
 end;
+
+procedure drunkCleanup(pt: pointer); begin end;  // Uses no data.
 
 end.

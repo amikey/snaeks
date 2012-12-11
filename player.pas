@@ -28,16 +28,15 @@ type
 		sprite: pSDL_Surface;
 		
 		segments: aPlayerSegment;
-		queue: aplayerSegment;
+		queue: aPlayerSegment;
 		
 		world: pointer;
 		isOccupied: function(world: pointer; x, y: int):boolean;
 		
-		boundingRect: pSDL_Surface;
-		
-		useDecide: boolean;
-		decide: procedure(pl: pPlayerState);
-		AIdata: pointer;
+		isRobot: boolean;
+		robotDecide: procedure(pl: pPlayerState);
+		robotCleanup: procedure(pt: pointer);
+		robotData: pointer;
 	end;
 
 procedure drawPlayer(pl: pPlayerState; dst: pSDL_Surface; view: ViewPort);
@@ -50,6 +49,8 @@ procedure playerAddItem(pl: pPlayerState; item: Pickup);
 procedure playerCrawl(pl: pPlayerState);
 
 function playerOccupies(pl: pPlayerState; xc, yc: int): boolean;
+
+procedure cleanupPlayer(pl: pPlayerState);
 
 implementation
 
@@ -138,7 +139,7 @@ function updatePlayer(pl: pPlayerState; dt: sint32): int;
 var shifted: boolean;
 begin
 	with pl^ do begin
-		if useDecide then decide(pl);
+		if isRobot then robotDecide(pl);
 		
 		pl^.sidewindTime += dt;
 		if pl^.sidewind and (pl^.sidewindTime > SidewindDelay) then begin
@@ -350,6 +351,12 @@ begin
 		if (seg.x = xc) and (seg.y = yc) then exit(true);
 	end;
 	exit(false);
+end;
+
+procedure cleanupPlayer(pl: pPlayerState);
+begin
+	SDL_FreeSurface(pl^.sprite);
+	if pl^.isRobot and (pl^.robotCleanup <> nil) then pl^.robotCleanup(pl^.robotData);
 end;
 
 end.

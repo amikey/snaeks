@@ -25,13 +25,8 @@ var
 	lastTime, lastFrame, dt: sint32;
 	world: pWorldState;
 	
-	delay: int;
-	
-	ok: boolean;
+	delay: int;	
 begin
-	ok := loadRes();
-	if not ok then exit(1);
-	
 	pickupsInit();
 		
 	dirKeys[0] := knone;
@@ -47,7 +42,9 @@ begin
 	player.vy := 0;
 	player.movDelay := 300;
 	player.time := 0;
-	player.useDecide := false;
+	player.sidewind := false;
+	player.sidewindTime := 0;
+	player.isRobot := false;
 	for i := 1 to 6 do playerAddSegment(@player, seg);
 	
 	// This is just a convenient way of making a copy of res.snake. It should already be in the display format.
@@ -62,10 +59,13 @@ begin
 	player2.vy := 0;
 	player2.movDelay := 300;
 	player2.time := 0;
+	player.sidewind := false;
+	player.sidewindTime := 0;
 	for i := 1 to 6 do playerAddSegment(@player2, seg);
 	
-	player2.decide := @drunkDecide;
-	player2.useDecide := true;
+	player2.robotDecide := @drunkDecide;
+	player2.robotCleanup := @drunkCleanup;
+	player2.isRobot := true;
 	
 	player2.sprite := SDL_DisplayFormatAlpha(res.snake);
 	mapColorsRGB(player2.sprite, SnakeCMapGreen , SnakeCMapBlue);
@@ -84,10 +84,16 @@ begin
 				SDL_KEYDOWN:
 					processKeyEvent(ev, dirKeys, @player);
 				SDL_KEYUP:
-					if ev.key.keysym.sym = SDLK_ESCAPE then exit(0)
-					else processKeyEvent(ev, dirKeys, @player);
-				SDL_EVENTQUIT:
+					if ev.key.keysym.sym = SDLK_ESCAPE then begin
+						cleanupWorld(world);
+						dispose(world);
+						exit(0)
+					end else processKeyEvent(ev, dirKeys, @player);
+				SDL_EVENTQUIT: begin
+					cleanupWorld(world);
+					dispose(world);
 					exit(0);
+					end;
 				end;
 			end;
 		end;
@@ -115,6 +121,7 @@ end;
 
 var
 	status: int;
+	ok: boolean;
 begin
 	randomize();
 	SDL_Init(SDL_INIT_VIDEO);
@@ -124,11 +131,18 @@ begin
 		exit;
 	end;
 	
+	ok := loadRes();
+	if not ok then begin
+		SDL_Quit();
+		halt(1);
+	end;
+	
 	SDL_WM_SetCaption('snaeks', 'snaeks');
 	
 	status := mainLoop();
 	if status <> 0 then writeln(StdErr, SDL_GetError());
 	
+	freeRes();
 	SDL_Quit();
 	halt(status);
 end.
