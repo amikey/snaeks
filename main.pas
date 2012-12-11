@@ -1,4 +1,4 @@
-uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, SDL_image, tile, player, key_control, world, pickups, color, drunk_ai;
+uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, SDL_image, tile, player, key_control, world, pickups, color, drunk_ai, resources;
 
 {$COPERATORS ON}
 {$PACKRECORDS C}
@@ -26,8 +26,12 @@ var
 	world: pWorldState;
 	
 	delay: int;
-		
-begin	
+	
+	ok: boolean;
+begin
+	ok := loadRes();
+	if not ok then exit(1);
+	
 	pickupsInit();
 		
 	dirKeys[0] := knone;
@@ -45,14 +49,9 @@ begin
 	player.time := 0;
 	player.useDecide := false;
 	for i := 1 to 6 do playerAddSegment(@player, seg);
-
-	player.sprite := IMG_Load('res/snake.png');
-	if player.sprite = nil then begin
-		writeln(SDL_GetError());
-		exit(1);
-	end;
 	
-	player.sprite := SDL_DisplayFormatAlpha(player.sprite);
+	// This is just a convenient way of making a copy of res.snake. It should already be in the display format.
+	player.sprite := SDL_DisplayFormatAlpha(res.snake);
 	
 	worldAddPlayer(world, @player);
 	
@@ -68,7 +67,7 @@ begin
 	player2.decide := @drunkDecide;
 	player2.useDecide := true;
 	
-	player2.sprite := SDL_DisplayFormatAlpha(player.sprite);
+	player2.sprite := SDL_DisplayFormatAlpha(res.snake);
 	mapColorsRGB(player2.sprite, SnakeCMapGreen , SnakeCMapBlue);
 	
 	worldAddPlayer(world, @player2);
@@ -130,6 +129,7 @@ begin
 	status := mainLoop();
 	if status <> 0 then writeln(StdErr, SDL_GetError());
 	
-	SDL_Quit;
+	SDL_Quit();
+	halt(status);
 end.
 

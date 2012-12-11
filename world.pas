@@ -48,10 +48,6 @@ begin
 		halt(1);
 	end;
 	
-	tilesRaw := world^.tiles.sprite;
-	world^.tiles.sprite := SDL_DisplayFormatAlpha(tilesRaw);
-	SDL_FreeSurface(tilesRaw);
-	
 	world^.map := newTileMap(66, 39);
 	TMfillRectRandom(world^.map, 10, 18, 0, 0, 66, 39);
 	exit(world);

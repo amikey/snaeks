@@ -5,7 +5,10 @@ uses SDL_types, SDL, SDL_video, SDL_image, view;
 
 type
 	PickupType = record
-		sprite: pSDL_Surface;
+		// simpleFood has a different sprite and the effect of increasing snake lenght by 1.
+		simpleFood: boolean;
+		
+		// HUD icon, if any. Freed after the item is used.
 		icon: pSDL_Surface;
 	end;
 	
@@ -18,11 +21,11 @@ type
 var
 	pickupFood: PickupType;
 
-function pickupsInit(): string;
-
+procedure pickupsInit();
 procedure drawPickup(pu: Pickup; screen: pSDL_Surface; view: ViewPort);
 
 implementation
+uses resources;
 
 procedure drawPickup(pu: Pickup; screen: pSDL_Surface; view: ViewPort);
 var
@@ -38,24 +41,15 @@ begin
 	dstRect.w := view.tileBase.w;
 	dstRect.h := view.tileBase.h;
 	
-	SDL_BlitSurface(pu.typ^.sprite, @srcRect, screen, @dstRect);
+	SDL_BlitSurface(res.tiles.sprite, @srcRect, screen, @dstRect);
 end;
 	
-function pickupsInit(): string;
+procedure pickupsInit();
 var
 	rect: SDL_Rect;
 begin
-	with pickupFood do begin
-		sprite := IMG_Load('res/tilemap.png');
-		if sprite = nil then begin
-			writeln(stderr, SDL_GetError());
-			exit;
-		end;
-		
-		sprite := SDL_DisplayFormatAlpha(sprite);
-	end;
-	
-	exit('');
+	pickupFood.simpleFood := true;
+	pickupFood.icon := nil;	
 end;
 
 end.

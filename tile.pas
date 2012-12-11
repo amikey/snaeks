@@ -27,6 +27,7 @@ function newTileMap(w, h: int): pTileMap;
 // loadTiles loads tile sprites from the given file.
 // w and h are the number of columns and the number of rows of sprites in the file, respectively.
 // All tile sprites must have the same dimmensions.
+// If loading fails, sprite = nil.
 function loadTiles(fname: pchar; w, h: int): TileSprites;
 
 // TMfillRectRandom fills the given rectangle with indices in the range [ifrom, ito).
@@ -42,11 +43,18 @@ implementation
 function loadTiles(fname: pchar; w, h: int): TileSprites;
 var
 	tiles: TileSprites;
+	rawSprite: pSDL_Surface;
 	rect: SDL_Rect;
 	tw, th: int;
 	x, y: int;
 begin
-	tiles.sprite := IMG_Load(fname);
+	rawSprite := IMG_Load(fname);
+	if RawSprite = nil then begin
+		tiles.sprite := nil;
+		exit(tiles);
+	end;
+	
+	tiles.sprite := SDL_DisplayFormatAlpha(rawSprite);
 	if tiles.sprite = nil then begin
 		exit(tiles);
 	end;
