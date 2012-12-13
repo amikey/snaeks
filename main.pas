@@ -44,6 +44,7 @@ begin
 	player.vy := 0;
 	player.movDelay := 300;
 	player.time := 0;
+	for i := 0 to 2 do player.items[i] := nil;
 	player.sidewind := false;
 	player.sidewindTime := 0;
 	player.isRobot := false;
@@ -61,8 +62,9 @@ begin
 	player2.vy := 0;
 	player2.movDelay := 300;
 	player2.time := 0;
-	player.sidewind := false;
-	player.sidewindTime := 0;
+	for i := 0 to 2 do player2.items[i] := nil;
+	player2.sidewind := false;
+	player2.sidewindTime := 0;
 	for i := 1 to 6 do playerAddSegment(@player2, seg);
 	
 	player2.robotDecide := @drunkDecide;
@@ -75,9 +77,10 @@ begin
 	worldAddPlayer(world, @player2);
 
 	for i := 0 to 5 do spawnPickupType(world, @pickupFood);
+	spawnPickupType(world, @pickupGun);
 	
 	hud.player := @player;
-		
+	
 	lastTime := SDL_GetTicks();
 	lastFrame := lastTime;
 		

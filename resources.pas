@@ -9,6 +9,9 @@ type
 		tiles: TileSprites;
 		
 		itemsHUD: pSDL_Surface;
+		
+		itemIcons: pSDL_Surface;
+		iconGunRect: SDL_Rect;
 	end;
 
 var
@@ -22,7 +25,7 @@ uses SDL_image;
 
 function loadRes(): boolean;
 var
-	rawSnake, rawItemsHUD: pSDL_Surface;
+	rawSnake, rawItemsHUD, rawIcons: pSDL_Surface;
 begin
 	if res.snake <> nil then freeRes();
 	
@@ -43,6 +46,18 @@ begin
 		itemsHUD := SDL_DisplayFormatAlpha(rawItemsHUD);
 		if itemsHUD = nil then exit(false);
 		SDL_FreeSurface(rawItemsHUD);
+		
+		rawIcons := IMG_Load('res/item_icons.png');
+		if rawIcons = nil then exit(false);
+		
+		itemIcons := SDL_DisplayFormatAlpha(rawIcons);
+		if itemIcons = nil then exit(false);
+		SDL_FreeSurface(rawIcons);
+		
+		iconGunRect.x := 0;
+		iconGunRect.y := 0;
+		iconGunRect.w := 40;
+		iconGunRect.h := 40;
 	end;
 	
 	exit(true);
@@ -52,6 +67,8 @@ procedure freeRes();
 begin
 	SDL_FreeSurface(res.snake);
 	SDL_FreeSurface(res.tiles.sprite);
+	SDL_FreeSurface(res.itemsHUD);
+	SDL_FreeSurface(res.itemIcons);
 	setLength(res.tiles.rects, 0);
 end;
 

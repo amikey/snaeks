@@ -89,7 +89,11 @@ begin
 			end;
 			setLength(world^.pickups, length(world^.pickups)-1);
 			
-			spawnPickupType(world, @pickupFood);
+			if item.typ^.simpleFood then begin
+				spawnPickupType(world, @pickupFood);
+			end else begin
+				spawnPickupType(world, @pickupGun);
+			end;
 		end;
 	end;
 end;

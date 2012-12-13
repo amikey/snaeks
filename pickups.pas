@@ -4,12 +4,14 @@ interface
 uses SDL_types, SDL, SDL_video, SDL_image, view;
 
 type
+	pPickupType = ^PickupType;
 	PickupType = record
 		// simpleFood has a different sprite and the effect of increasing snake lenght by 1.
 		simpleFood: boolean;
 		
 		// HUD icon, if any. Freed after the item is used.
 		icon: pSDL_Surface;
+		iconRect: SDL_Rect;
 	end;
 	
 	pPickup = ^Pickup;
@@ -20,6 +22,7 @@ type
 
 var
 	pickupFood: PickupType;
+	pickupGun: PickupType;
 
 procedure pickupsInit();
 procedure drawPickup(pu: Pickup; screen: pSDL_Surface; view: ViewPort);
@@ -53,7 +56,11 @@ var
 	rect: SDL_Rect;
 begin
 	pickupFood.simpleFood := true;
-	pickupFood.icon := nil;	
+	pickupFood.icon := nil;
+	
+	pickupGun.simpleFood := false;
+	pickupGun.icon := res.itemIcons;
+	pickupGun.iconRect := res.iconGunRect;
 end;
 
 end.

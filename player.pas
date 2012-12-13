@@ -30,6 +30,8 @@ type
 		segments: aPlayerSegment;
 		queue: aPlayerSegment;
 		
+		items: array[0..2] of pPickupType;
+		
 		world: pointer;
 		isOccupied: function(world: pointer; x, y: int):boolean;
 		
@@ -131,8 +133,18 @@ end;
 procedure playerAddItem(pl: pPlayerState; item: Pickup);
 var
 	seg: playerSegment;
+	i: int;
 begin
-	playerAddSegment(pl, seg);
+	if item.typ^.simpleFood then begin
+		playerAddSegment(pl, seg);
+	end else begin
+		for i := 0 to 2 do begin
+			if pl^.items[i] = nil then begin
+				pl^.items[i] := item.typ;
+				exit();
+			end;
+		end;
+	end;
 end;
 
 function updatePlayer(pl: pPlayerState; dt: sint32): int;
