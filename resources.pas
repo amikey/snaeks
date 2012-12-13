@@ -7,6 +7,8 @@ type
 	resType = record
 		snake: pSDL_Surface;
 		tiles: TileSprites;
+		
+		itemsHUD: pSDL_Surface;
 	end;
 
 var
@@ -20,7 +22,7 @@ uses SDL_image;
 
 function loadRes(): boolean;
 var
-	rawSnake: pSDL_Surface;
+	rawSnake, rawItemsHUD: pSDL_Surface;
 begin
 	if res.snake <> nil then freeRes();
 	
@@ -34,6 +36,13 @@ begin
 	
 		tiles := loadTiles('res/tilemap.png', 10, 10);
 		if tiles.sprite = nil then exit(false);
+		
+		rawItemsHUD := IMG_Load('res/item_box.png');
+		if rawItemsHUD = nil then exit(false);
+		
+		itemsHUD := SDL_DisplayFormatAlpha(rawItemsHUD);
+		if itemsHUD = nil then exit(false);
+		SDL_FreeSurface(rawItemsHUD);
 	end;
 	
 	exit(true);

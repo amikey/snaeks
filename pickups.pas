@@ -31,8 +31,12 @@ procedure drawPickup(pu: Pickup; screen: pSDL_Surface; view: ViewPort);
 var
 	srcRect, dstRect: SDL_Rect;
 begin
-	srcRect.x := 12;
-	srcRect.y := 0;
+	if pu.typ^.simpleFood then begin
+		srcRect := res.tiles.rects[1];
+	end else begin
+		srcRect := res.tiles.rects[2];
+	end;
+	
 	srcRect.w := 12;
 	srcRect.h := 12;
 	

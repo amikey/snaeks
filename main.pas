@@ -1,4 +1,4 @@
-uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, SDL_image, tile, player, key_control, world, pickups, color, drunk_ai, resources;
+uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, SDL_image, tile, player, key_control, world, pickups, color, drunk_ai, resources, hud;
 
 {$COPERATORS ON}
 {$PACKRECORDS C}
@@ -25,6 +25,8 @@ var
 	lastTime, lastFrame, dt: sint32;
 	world: pWorldState;
 	
+	hud: HUDstate;
+	
 	delay: int;	
 begin
 	pickupsInit();
@@ -36,8 +38,8 @@ begin
 	
 	world := newWorld();
 	
-	player.x := 2;
-	player.y := 2;
+	player.x := 6;
+	player.y := 6;
 	player.vx := 1;
 	player.vy := 0;
 	player.movDelay := 300;
@@ -73,6 +75,8 @@ begin
 	worldAddPlayer(world, @player2);
 
 	for i := 0 to 5 do spawnPickupType(world, @pickupFood);
+	
+	hud.player := @player;
 		
 	lastTime := SDL_GetTicks();
 	lastFrame := lastTime;
@@ -106,6 +110,7 @@ begin
 		err := SDL_FillRect(screen, nil, $00000000);
 		if err <> 0 then exit(err);
 		drawWorld(world, screen);
+		drawHUD(@hud, screen);
 		SDL_UpdateRect(screen, 0, 0, 0, 0);
 		
 		delay := framedelay - (SDL_GetTicks() - lastFrame - framedelay);
