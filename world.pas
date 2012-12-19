@@ -66,8 +66,13 @@ procedure spawnPickupType(world: pWorldState; typ: pPickupType);
 var
 	pu: Pickup;
 begin
+	// HACK
 	pu.x := random(world^.map^.width);
 	pu.y := random(world^.map^.height);
+	while isOccupied(world, pu.x, pu.y) do begin
+		pu.x := random(world^.map^.width);
+		pu.y := random(world^.map^.height);
+	end;
 	
 	pu.typ := typ;
 	

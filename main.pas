@@ -77,7 +77,7 @@ begin
 	
 	worldAddPlayer(world, @player2);
 
-	for i := 0 to 200 do spawnPickupType(world, @pickupFood);
+	for i := 0 to 8 do spawnPickupType(world, @pickupFood);
 	spawnPickupType(world, @pickupGun);
 	
 	hud.player := @player;
