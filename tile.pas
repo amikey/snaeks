@@ -32,7 +32,9 @@ function loadTiles(fname: pchar; w, h: int): TileSprites;
 
 // TMfillRectRandom fills the given rectangle with indices in the range [ifrom, ito).
 procedure TMfillRectRandom(tm: pTileMap; ifrom, ito: int; sx, sy, w, h: int);
-		
+
+procedure TMboxRandom(tm: pTileMap; ifrom, ito: int; sx, sy, w, h: int);
+
 // TMindex returns the index at the given coordinates.
 function TMindex(tm: pTileMap; x: sint32; y: sint32): uint32;
 		
@@ -97,6 +99,31 @@ begin
 			ind := ifrom + random(ito-ifrom);
 			tm^.i[y*(tm^.width+tm^.skip) + x] := ind;
 		end;
+	end;
+end;
+
+procedure TMboxRandom(tm: pTileMap; ifrom, ito: int; sx, sy, w, h: int);
+var
+	ind, x, y: int;
+begin
+	y := sy;
+	for x := sx to sx+w-1 do begin
+		ind := ifrom + random(ito-ifrom);
+		tm^.i[y*(tm^.width+tm^.skip) + x] := ind;
+	end;
+	
+	for y := sy+1 to sy+h-2 do begin
+		ind := ifrom + random(ito-ifrom);
+		tm^.i[y*(tm^.width+tm^.skip) + sx] := ind;
+		
+		ind := ifrom + random(ito-ifrom);
+		tm^.i[y*(tm^.width+tm^.skip) + sx + w-1] := ind;
+	end;
+	
+	y := sy + h - 1;
+	for x := sx to sx+w-1 do begin
+		ind := ifrom + random(ito-ifrom);
+		tm^.i[y*(tm^.width+tm^.skip) + x] := ind;
 	end;
 end;
 

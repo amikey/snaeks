@@ -133,10 +133,15 @@ end;
 function isOccupied(world: pointer; x, y: int): boolean;
 var
 	pl: pPlayerState;
+	ind: int;
 begin
 	for pl in pWorldState(world)^.players do begin
 		if playerOccupies(pl, x, y) then exit(true);
 	end;
+	
+	ind := TMindex(pWorldState(world)^.map, x, y);
+	if (ind >= 20) and (ind <= 29) then exit(true);
+	
 	exit(false);
 end;
 

@@ -37,6 +37,7 @@ begin
 	dirKeys[3] := knone;
 	
 	world := newWorld();
+	TMboxRandom(world^.map, 20, 29, 0, 0, world^.map^.width, world^.map^.height);
 	
 	player.x := 6;
 	player.y := 6;
@@ -76,7 +77,7 @@ begin
 	
 	worldAddPlayer(world, @player2);
 
-	for i := 0 to 5 do spawnPickupType(world, @pickupFood);
+	for i := 0 to 200 do spawnPickupType(world, @pickupFood);
 	spawnPickupType(world, @pickupGun);
 	
 	hud.player := @player;

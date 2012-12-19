@@ -108,6 +108,7 @@ begin
 		x += vx;
 		y += vy;
 	end;
+	exit(true);
 end;
 
 procedure playerCrawl(pl: pPlayerState);
