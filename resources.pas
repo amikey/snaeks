@@ -3,6 +3,11 @@ unit resources;
 interface
 uses tile, SDL, SDL_video;
 
+const
+	// First and last (inclusive) index of wall tiles.
+	wallTilesIndicesFrom = 20;
+	wallTilesIndicesTo   = 29;
+
 type
 	resType = record
 		snake: pSDL_Surface;
