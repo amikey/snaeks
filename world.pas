@@ -99,8 +99,8 @@ begin
 	setLength(pos, w * h);
 	for j := 0 to h-1 do begin
 		for i := 0 to w-1 do begin
-			pos[j*h + i].x := i;
-			pos[j*h + i].y := j;
+			pos[j*w + i].x := i;
+			pos[j*w + i].y := j;
 		end;
 	end;
 	
