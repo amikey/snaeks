@@ -35,6 +35,8 @@ procedure TMfillRectRandom(tm: pTileMap; ifrom, ito: int; sx, sy, w, h: int);
 
 procedure TMboxRandom(tm: pTileMap; ifrom, ito: int; sx, sy, w, h: int);
 
+function TMinBounds(tm: pTileMap; x, y: int): boolean;
+
 // TMindex returns the index at the given coordinates.
 function TMindex(tm: pTileMap; x: sint32; y: sint32): uint32;
 		
@@ -125,6 +127,11 @@ begin
 		ind := ifrom + random(ito-ifrom);
 		tm^.i[y*(tm^.width+tm^.skip) + x] := ind;
 	end;
+end;
+
+function TMinBounds(tm: pTileMap; x, y: int): boolean;
+begin
+	exit((x >= 0) and (y >= 0) and (x < tm^.width) and (y < tm^.height));
 end;
 
 function TMindex(tm: pTileMap; x: sint32; y: sint32): uint32;

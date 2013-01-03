@@ -1,4 +1,4 @@
-uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, SDL_image, tile, player, key_control, world, pickups, color, drunk_ai, resources, hud;
+uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, SDL_image, tile, player, key_control, world, pickups, color, robot, resources, hud;
 
 {$COPERATORS ON}
 {$PACKRECORDS C}
@@ -43,7 +43,7 @@ begin
 	player.y := 6;
 	player.vx := 1;
 	player.vy := 0;
-	player.movDelay := 300;
+	player.movDelay := 200;
 	player.time := 0;
 	for i := 0 to 2 do player.items[i] := nil;
 	player.sidewind := false;
@@ -61,15 +61,15 @@ begin
 	player2.y := 20;
 	player2.vx := -1;
 	player2.vy := 0;
-	player2.movDelay := 300;
+	player2.movDelay := 200;
 	player2.time := 0;
 	for i := 0 to 2 do player2.items[i] := nil;
 	player2.sidewind := false;
 	player2.sidewindTime := 0;
 	for i := 1 to 6 do playerAddSegment(@player2, seg);
 	
-	player2.robotDecide := @drunkDecide;
-	player2.robotCleanup := @drunkCleanup;
+	player2.robotDecide := @robotDecide;
+	player2.robotCleanup := @robotCleanup;
 	player2.isRobot := true;
 	
 	player2.sprite := SDL_DisplayFormatAlpha(res.snake);
@@ -87,21 +87,19 @@ begin
 		
 	while true do begin	
 		while SDL_PollEvent(@ev) <> 0 do begin
-			if gotevent <> 0 then begin
-				case ev.eventtype of
-				SDL_KEYDOWN:
-					processKeyEvent(ev, dirKeys, @player);
-				SDL_KEYUP:
-					if ev.key.keysym.sym = SDLK_ESCAPE then begin
-						cleanupWorld(world);
-						dispose(world);
-						exit(0)
-					end else processKeyEvent(ev, dirKeys, @player);
-				SDL_EVENTQUIT: begin
+			case ev.eventtype of
+			SDL_KEYDOWN:
+				processKeyEvent(ev, dirKeys, @player);
+			SDL_KEYUP:
+				if ev.key.keysym.sym = SDLK_ESCAPE then begin
 					cleanupWorld(world);
 					dispose(world);
-					exit(0);
-					end;
+					exit(0)
+				end else processKeyEvent(ev, dirKeys, @player);
+			SDL_EVENTQUIT: begin
+				cleanupWorld(world);
+				dispose(world);
+				exit(0);
 				end;
 			end;
 		end;
@@ -115,6 +113,7 @@ begin
 		if err <> 0 then exit(err);
 		drawWorld(world, screen);
 		drawHUD(@hud, screen);
+				
 		SDL_UpdateRect(screen, 0, 0, 0, 0);
 		
 		delay := framedelay - (SDL_GetTicks() - lastFrame - framedelay);

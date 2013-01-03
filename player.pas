@@ -36,6 +36,7 @@ type
 		isOccupied: function(world: pointer; x, y: int):boolean;
 		
 		isRobot: boolean;
+		// robotDecide should set vx and vy.
 		robotDecide: procedure(pl: pPlayerState);
 		robotCleanup: procedure(pt: pointer);
 		robotData: pointer;
