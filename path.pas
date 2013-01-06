@@ -296,6 +296,7 @@ begin
 		end;
 	end;
 	
+	for wp in all do dispose(wp);
 	cleanupPQ(open);
 	cleanupPQ(closed);
 	exit(path);

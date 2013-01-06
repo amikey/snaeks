@@ -6,9 +6,11 @@ unit robot;
 interface
 uses SDL_types, player, SDL_video;
 
+{$ifdef DEBUG}
 var
 	debugOverlay: pSDL_Surface;
 	debugSquare: pSDL_Surface;
+{$endif}
 
 procedure robotInit(player: pPlayerState);
 procedure robotDecide(player: pPlayerState);
@@ -69,6 +71,7 @@ begin
 	player^.vx := wp.x - player^.x;
 	player^.vy := wp.y - player^.y;
 	
+	{$ifdef DEBUG}
 	dst.x := 4 + player^.x * 12;
 	dst.y := 4 + player^.y * 12;
 	SDL_BlitSurface(debugSquare, nil, debugOverlay, @dst);
@@ -78,6 +81,7 @@ begin
 		dst.y := 4 + wp.y * 12;
 		SDL_BlitSurface(debugSquare, nil, debugOverlay, @dst);
 	end;
+	{$endif}
 end;
 
 procedure robotCleanup(pt: pointer);

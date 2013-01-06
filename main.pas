@@ -29,12 +29,14 @@ var
 	
 	delay: int;	
 begin
+	{$ifdef DEBUG}
 	debugOverlay := SDL_DisplayFormat(screen);
 	SDL_SetColorkey(debugOverlay, SDL_SRCCOLORKEY or SDL_RLEACCEL, 0);
 	SDL_SetAlpha(debugOverlay, SDL_SRCALPHA, 120);
 	
 	debugSquare := SDL_CreateRGBSurface(SDL_SWSURFACE, 12, 12, 24, 0, 0, 0, 0);
 	SDL_FillRect(debugSquare, nil, $00ff00);
+	{$endif}
 	
 	pickupsInit();
 		
@@ -119,8 +121,10 @@ begin
 		drawWorld(world, screen);
 		drawHUD(@hud, screen);
 		
+		{$ifdef DEBUG}
 		SDL_BlitSurface(debugOverlay, nil, screen, nil);
 		SDL_FillRect(debugOverlay, nil, 0);
+		{$endif}
 		
 		SDL_UpdateRect(screen, 0, 0, 0, 0);
 		
