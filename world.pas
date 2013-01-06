@@ -177,14 +177,25 @@ end;
 
 procedure updateWorld(world: pWorldState; dt: int);
 var
+	updateResult: PlayerUpdateState;
 	tRemaining: int;
 	pl: pPlayerState;
+	moved: boolean;
 begin
+	moved := false;
 	for pl in world^.players do begin
-		tRemaining := dt;
-		while tRemaining > 0 do begin
-			tRemaining := updatePlayer(pl, tRemaining);
+		updateResult.time := dt;
+		while updateResult.time > 0 do begin
+			updateResult := updatePlayer(pl, updateResult.time);
+			moved := moved or updateResult.moved;
 			handlePlayer(world, pl);
+		end;
+	end;
+	
+	// robots get to decide at most once per frame.
+	if true then begin
+		for pl in world^.players do begin
+			if pl^.isRobot then pl^.robotDecide(pl);
 		end;
 	end;
 end;

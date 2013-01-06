@@ -1,3 +1,5 @@
 *.o
 *.ppu
 snaeks
+callgrind.out*
+gmon.out

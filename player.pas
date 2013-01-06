@@ -41,9 +41,14 @@ type
 		robotCleanup: procedure(pt: pointer);
 		robotData: pointer;
 	end;
+	
+	PlayerUpdateState = record
+		time: int;
+		moved: boolean;
+	end;
 
 procedure drawPlayer(pl: pPlayerState; dst: pSDL_Surface; view: ViewPort);
-function updatePlayer(pl: pPlayerState; dt: sint32): int;
+function updatePlayer(pl: pPlayerState; dt: sint32): PlayerUpdateState;
 
 procedure playerAddSegment(pl: pPlayerState; seg: playerSegment);
 procedure playerAddItem(pl: pPlayerState; item: Pickup);
@@ -149,32 +154,35 @@ begin
 	end;
 end;
 
-function updatePlayer(pl: pPlayerState; dt: sint32): int;
-var shifted: boolean;
+function updatePlayer(pl: pPlayerState; dt: sint32): PlayerUpdateState;
+var
+	shifted: boolean;
+	ret: PlayerUpdateState;
 begin
-	with pl^ do begin
-		if isRobot then robotDecide(pl);
+	ret.time := 0;
+	ret.moved := false;
+	
+	pl^.sidewindTime += dt;
+	if pl^.sidewind and (pl^.sidewindTime > SidewindDelay) then begin
+		pl^.sidewind := false;
 		
-		pl^.sidewindTime += dt;
-		if pl^.sidewind and (pl^.sidewindTime > SidewindDelay) then begin
-			pl^.sidewind := false;
-			
-			shifted := shiftPlayer(pl);
-			if shifted then begin
-				pl^.sidewindTime -= SidewindDelay;
-				pl^.time := 0;
-			end;
-			exit(0);
+		shifted := shiftPlayer(pl);
+		if shifted then begin
+			pl^.sidewindTime -= SidewindDelay;
+			pl^.time := 0;
+			ret.moved := true;
 		end;
-		
-		if time + dt >= movDelay then begin
-			shiftPlayer(pl);
-			time := 0;
-			exit(dt - (movDelay - time));
-		end;
-		time += dt;
-		exit(0);
+		exit(ret);
 	end;
+		
+	if pl^.time + dt >= pl^.movDelay then begin
+		shiftPlayer(pl);
+		pl^.time := 0;
+		ret.time := dt - (pl^.movDelay - pl^.time);
+		ret.moved := true;
+	end;
+	pl^.time += dt;
+	exit(ret);
 end;
 
 function headRect(pl: pPlayerState): SDL_Rect;

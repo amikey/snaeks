@@ -29,6 +29,13 @@ var
 	
 	delay: int;	
 begin
+	debugOverlay := SDL_DisplayFormat(screen);
+	SDL_SetColorkey(debugOverlay, SDL_SRCCOLORKEY or SDL_RLEACCEL, 0);
+	SDL_SetAlpha(debugOverlay, SDL_SRCALPHA, 120);
+	
+	debugSquare := SDL_CreateRGBSurface(SDL_SWSURFACE, 12, 12, 24, 0, 0, 0, 0);
+	SDL_FillRect(debugSquare, nil, $00ff00);
+	
 	pickupsInit();
 		
 	dirKeys[0] := knone;
@@ -68,9 +75,7 @@ begin
 	player2.sidewindTime := 0;
 	for i := 1 to 6 do playerAddSegment(@player2, seg);
 	
-	player2.robotDecide := @robotDecide;
-	player2.robotCleanup := @robotCleanup;
-	player2.isRobot := true;
+	robotInit(@player2);
 	
 	player2.sprite := SDL_DisplayFormatAlpha(res.snake);
 	mapColorsRGB(player2.sprite, SnakeCMapGreen , SnakeCMapBlue);
@@ -113,7 +118,10 @@ begin
 		if err <> 0 then exit(err);
 		drawWorld(world, screen);
 		drawHUD(@hud, screen);
-				
+		
+		SDL_BlitSurface(debugOverlay, nil, screen, nil);
+		SDL_FillRect(debugOverlay, nil, 0);
+		
 		SDL_UpdateRect(screen, 0, 0, 0, 0);
 		
 		delay := framedelay - (SDL_GetTicks() - lastFrame - framedelay);
