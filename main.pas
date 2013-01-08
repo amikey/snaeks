@@ -125,9 +125,7 @@ begin
 		SDL_BlitSurface(debugOverlay, nil, screen, nil);
 		SDL_FillRect(debugOverlay, nil, 0);
 		{$endif}
-		
-		SDL_UpdateRect(screen, 0, 0, 0, 0);
-		
+				
 		delay := framedelay - (SDL_GetTicks() - lastFrame - framedelay);
 		if delay < 0 then delay := 0;
 		
