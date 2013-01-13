@@ -6,7 +6,7 @@ interface
 uses SDL_types, SDL, SDL_video, view, pickups;
 
 const
-	SidewindDelay = 100;
+	SidewindDelay = 80;
 
 type
 	playerSegment = record
@@ -162,8 +162,11 @@ begin
 	ret.time := 0;
 	ret.moved := false;
 	
-	pl^.sidewindTime += dt;
-	if pl^.sidewind and (pl^.sidewindTime > SidewindDelay) then begin
+	if pl^.sidewind then begin
+		pl^.sidewindTime += dt;
+	end;
+	
+	if pl^.sidewindTime > SidewindDelay then begin
 		pl^.sidewind := false;
 		
 		shifted := shiftPlayer(pl);

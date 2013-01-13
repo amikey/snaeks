@@ -20,7 +20,7 @@ var
 	seg: playerSegment;
 	err: int;
 	
-	dirKeys: array[0..3] of int;
+	dirKeys: array of int;
 	
 	lastTime, lastFrame, dt: sint32;
 	world: pWorldState;
@@ -39,7 +39,8 @@ begin
 	{$endif}
 	
 	pickupsInit();
-		
+	
+	setLength(dirKeys, 4);
 	dirKeys[0] := knone;
 	dirKeys[1] := knone;
 	dirKeys[2] := knone;
@@ -96,13 +97,13 @@ begin
 		while SDL_PollEvent(@ev) <> 0 do begin
 			case ev.eventtype of
 			SDL_KEYDOWN:
-				processKeyEvent(ev, dirKeys, @player);
+				processKeyEvent(ev, @dirKeys, @player);
 			SDL_KEYUP:
 				if ev.key.keysym.sym = SDLK_ESCAPE then begin
 					cleanupWorld(world);
 					dispose(world);
 					exit(0)
-				end else processKeyEvent(ev, dirKeys, @player);
+				end else processKeyEvent(ev, @dirKeys, @player);
 			SDL_EVENTQUIT: begin
 				cleanupWorld(world);
 				dispose(world);
@@ -114,6 +115,7 @@ begin
 		dt := SDL_GetTicks() - lastTime;
 		lastTime := SDL_GetTicks();
 		
+		keyUpdate(@player, @dirKeys);
 		updateWorld(world, dt);
 		
 		err := SDL_FillRect(screen, nil, $00000000);
@@ -125,7 +127,7 @@ begin
 		SDL_BlitSurface(debugOverlay, nil, screen, nil);
 		SDL_FillRect(debugOverlay, nil, 0);
 		{$endif}
-				
+		
 		delay := framedelay - (SDL_GetTicks() - lastFrame - framedelay);
 		if delay < 0 then delay := 0;
 		
