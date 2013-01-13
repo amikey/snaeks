@@ -198,23 +198,28 @@ end;
 
 function neighborsOf(wp: int; world: pWorldState; all: pNodePool): aint;
 const
-	xoff: array[1..4] of int = (-1,  1,  0,  0);
-	yoff: array[1..4] of int = ( 0,  0,  1, -1);
+	xoff: array[1..8] of int = (  0,  1,  1,  1,  0, -1, -1, -1);
+	yoff: array[1..8] of int = ( -1, -1,  0,  1,  1,  1,  0, -1);
 var
 	ret: aint;
 	seekwp: pWaypoint;
 	extantwp: int;
-	newwp: Waypoint;
+	newwp, oldwp: Waypoint;
 	x, y, i, j: int;
 	next: int;
 begin
 	next := 0;
+	oldwp := NPind(all, wp)^;
 	
-	setLength(ret, 4);
+	setLength(ret, 8);
 	for i := low(xoff) to high(xoff) do begin
-		x := NPind(all, wp)^.x + xoff[i];
-		y := NPind(all, wp)^.y + yoff[i];
-		if (not TMinBounds(world^.map, x, y)) or isOccupied(world, x, y) then continue;
+		x := oldwp.x + xoff[i];
+		y := oldwp.y + yoff[i];
+		if not TMinBounds(world^.map, x, y) then continue;
+		if isOccupied(world, x, y) then continue;
+		if (xoff[i] <> 0) and (yoff[i] <> 0) and
+				( isOccupied(world, oldwp.x, y) or isOccupied(world, x, oldwp.y) ) then continue;
+		
 		extantwp := -1;
 		for j := 0 to all^.len-1 do begin
 			seekwp := NPind(all, j);

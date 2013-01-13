@@ -22,9 +22,6 @@ type
 		movDelay: int;
 		time: int;
 		
-		sidewind: boolean;
-		sidewindTime: int;
-		
 		sprite: pSDL_Surface;
 		
 		segments: aPlayerSegment;
@@ -47,14 +44,12 @@ type
 		moved: boolean;
 	end;
 
+function newPlayer(x, y, vx, vy: int): pPlayerState;
 procedure drawPlayer(pl: pPlayerState; dst: pSDL_Surface; view: ViewPort);
 function updatePlayer(pl: pPlayerState; dt: sint32): PlayerUpdateState;
 
 procedure playerAddSegment(pl: pPlayerState; seg: playerSegment);
 procedure playerAddItem(pl: pPlayerState; item: Pickup);
-
-// crawl makes the given player shift one tile as soon as possible.
-procedure playerCrawl(pl: pPlayerState);
 
 function playerOccupies(pl: pPlayerState; xc, yc: int): boolean;
 
@@ -82,54 +77,78 @@ begin
 	exit(ret);
 end;
 
+function newPlayer(x, y, vx, vy: int): pPlayerState;
+var
+	ret: pPlayerState;
+	seg: PlayerSegment;
+	i: int;
+begin
+	new(ret);
+	ret^.x := x;
+	ret^.y := y;
+	ret^.vx := vx;
+	ret^.vy := vy;
+	
+	ret^.movDelay := 200;
+	ret^.time := 0;
+	
+	for i := 0 to 2 do ret^.items[i] := nil;
+	
+	ret^.isRobot := false;
+	
+	setLength(ret^.segments, 0);
+	setLength(ret^.queue, 0);
+	
+	seg.x := x - vx;
+	seg.y := y - vy;
+	queueAdd(ret^.segments, seg);
+	exit(ret);
+end;
+
 function shiftPlayer(pl: pPlayerState): boolean;
 var
 	i: int;
 	newseg: playerSegment;
-	nx, ny: int;
+	nx, ny, dx, dy: int;
 begin
+	dx := pl^.x - pl^.segments[0].x;
+	dy := pl^.y - pl^.segments[0].y;
+	if (dx <> pl^.vx) or (dy <> pl^.vy) then begin
+		if dx = pl^.vx then pl^.vx := 0;
+		if dy = pl^.vy then pl^.vy := 0;
+	end;
+	
+	if (pl^.vx <> 0) and (pl^.vy <> 0) then begin
+		if (pl^.vx <> dx) and (pl^.vx <> -dx) then pl^.vy := 0
+		else pl^.vx := 0;
+	end;
+	
 	nx := pl^.x+pl^.vx;
 	ny := pl^.y+pl^.vy;
 	if pl^.isOccupied(pl^.world, nx, ny) then exit(false);
 	
-	with pl^ do begin
-		if length(queue) = 0 then begin
-			for i := high(segments) downto 1 do begin
-				segments[i].x := segments[i-1].x;
-				segments[i].y := segments[i-1].y;
-			end;
-			segments[0].x := x;
-			segments[0].y := y;
-			
-			x += vx;
-			y += vy;
-			exit(true);
+	if length(pl^.queue) = 0 then begin
+		for i := high(pl^.segments) downto 1 do begin
+			pl^.segments[i].x := pl^.segments[i-1].x;
+			pl^.segments[i].y := pl^.segments[i-1].y;
 		end;
+		pl^.segments[0].x := pl^.x;
+		pl^.segments[0].y := pl^.y;
 		
-		newseg := queueRemove(queue);
-		newseg.x := x;
-		newseg.y := y;
-		queueAdd(segments, newseg);
-		
-		x += vx;
-		y += vy;
+		pl^.x += pl^.vx;
+		pl^.y += pl^.vy;
+		exit(true);
 	end;
-	exit(true);
-end;
+	
+	newseg := queueRemove(pl^.queue);
+	newseg.x := pl^.x;
+	newseg.y := pl^.y;
+	queueAdd(pl^.segments, newseg);
+	
+	pl^.x += pl^.vx;
+	pl^.y += pl^.vy;
 
-procedure playerCrawl(pl: pPlayerState);
-begin
-	if length(pl^.segments) = 0 then begin
-		pl^.sidewind := true;
-		exit;
-	end;
-	
-	if (pl^.vx = pl^.x - pl^.segments[0].x) and (pl^.vy = pl^.y - pl^.segments[0].y) then begin
-		pl^.sidewind := false;
-		exit;
-	end;
-	
-	pl^.sidewind := true;
+	exit(true);
 end;
 
 procedure playerAddSegment(pl: pPlayerState; seg: playerSegment);
@@ -158,32 +177,28 @@ function updatePlayer(pl: pPlayerState; dt: sint32): PlayerUpdateState;
 var
 	shifted: boolean;
 	ret: PlayerUpdateState;
+	dx, dy: int;
 begin
 	ret.time := 0;
 	ret.moved := false;
 	
-	if pl^.sidewind then begin
-		pl^.sidewindTime += dt;
-	end;
+	dx := pl^.x - pl^.segments[0].x;
+	dy := pl^.y - pl^.segments[0].y;
 	
-	if pl^.sidewindTime > SidewindDelay then begin
-		pl^.sidewind := false;
-		
-		shifted := shiftPlayer(pl);
-		if shifted then begin
-			pl^.sidewindTime -= SidewindDelay;
+	if (pl^.vx <> dx) or (pl^.vy <> dy) then begin
+		if pl^.time + dt >= SidewindDelay then begin
+			shiftPlayer(pl);
 			pl^.time := 0;
+			ret.time := dt - (SidewindDelay - pl^.time);
 			ret.moved := true;
 		end;
-		exit(ret);
-	end;
-		
-	if pl^.time + dt >= pl^.movDelay then begin
+	end else if pl^.time + dt >= pl^.movDelay then begin
 		shiftPlayer(pl);
 		pl^.time := 0;
 		ret.time := dt - (pl^.movDelay - pl^.time);
 		ret.moved := true;
 	end;
+	
 	pl^.time += dt;
 	exit(ret);
 end;

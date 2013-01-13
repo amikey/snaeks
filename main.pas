@@ -15,19 +15,18 @@ var
 	ev: SDL_Event;
 
 	gotevent: int;
+	kstate: MovKeyState;
 	
-	player, player2: playerState;
+	player, player2: pPlayerState;
 	seg: playerSegment;
 	err: int;
-	
-	dirKeys: array of int;
 	
 	lastTime, lastFrame, dt: sint32;
 	world: pWorldState;
 	
 	hud: HUDstate;
 	
-	delay: int;	
+	delay: int;
 begin
 	{$ifdef DEBUG}
 	debugOverlay := SDL_DisplayFormat(screen);
@@ -40,70 +39,54 @@ begin
 	
 	pickupsInit();
 	
-	setLength(dirKeys, 4);
-	dirKeys[0] := knone;
-	dirKeys[1] := knone;
-	dirKeys[2] := knone;
-	dirKeys[3] := knone;
-	
 	world := newWorld();
 	TMboxRandom(world^.map, 20, 29, 0, 0, world^.map^.width, world^.map^.height);
 	
-	player.x := 6;
-	player.y := 6;
-	player.vx := 1;
-	player.vy := 0;
-	player.movDelay := 200;
-	player.time := 0;
-	for i := 0 to 2 do player.items[i] := nil;
-	player.sidewind := false;
-	player.sidewindTime := 0;
-	player.isRobot := false;
-	for i := 1 to 6 do playerAddSegment(@player, seg);
+	player := newPlayer(6, 6, 1, 0);
+	player^.movDelay := 200;
+	player^.isRobot := false;
+	for i := 1 to 6 do playerAddSegment(player, seg);
 	
 	// This is just a convenient way of making a copy of res.snake. It should already be in the display format.
-	player.sprite := SDL_DisplayFormatAlpha(res.snake);
+	player^.sprite := SDL_DisplayFormatAlpha(res.snake);
 	
-	worldAddPlayer(world, @player);
+	worldAddPlayer(world, player);	
 	
+	player2 := newPlayer(20, 20, -1, 0);
+	player2^.movDelay := 200;
+	for i := 1 to 6 do playerAddSegment(player2, seg);
 	
-	player2.x := 20;
-	player2.y := 20;
-	player2.vx := -1;
-	player2.vy := 0;
-	player2.movDelay := 200;
-	player2.time := 0;
-	for i := 0 to 2 do player2.items[i] := nil;
-	player2.sidewind := false;
-	player2.sidewindTime := 0;
-	for i := 1 to 6 do playerAddSegment(@player2, seg);
+	robotInit(player2);
 	
-	robotInit(@player2);
+	player2^.sprite := SDL_DisplayFormatAlpha(res.snake);
+	mapColorsRGB(player2^.sprite, SnakeCMapGreen , SnakeCMapBlue);
 	
-	player2.sprite := SDL_DisplayFormatAlpha(res.snake);
-	mapColorsRGB(player2.sprite, SnakeCMapGreen , SnakeCMapBlue);
-	
-	worldAddPlayer(world, @player2);
+	worldAddPlayer(world, player2);
 
 	for i := 0 to 8 do spawnPickupType(world, @pickupFood);
 	spawnPickupType(world, @pickupGun);
 	
-	hud.player := @player;
+	hud.player := player;
 	
 	lastTime := SDL_GetTicks();
 	lastFrame := lastTime;
-		
+	
+	kstate.u := false;
+	kstate.d := false;
+	kstate.l := false;
+	kstate.r := false;
+	
 	while true do begin	
 		while SDL_PollEvent(@ev) <> 0 do begin
 			case ev.eventtype of
 			SDL_KEYDOWN:
-				processKeyEvent(ev, @dirKeys, @player);
+				processKeyEvent(ev, @kstate, player);
 			SDL_KEYUP:
 				if ev.key.keysym.sym = SDLK_ESCAPE then begin
 					cleanupWorld(world);
 					dispose(world);
 					exit(0)
-				end else processKeyEvent(ev, @dirKeys, @player);
+				end else processKeyEvent(ev, @kstate, player);
 			SDL_EVENTQUIT: begin
 				cleanupWorld(world);
 				dispose(world);
@@ -115,7 +98,7 @@ begin
 		dt := SDL_GetTicks() - lastTime;
 		lastTime := SDL_GetTicks();
 		
-		keyUpdate(@player, @dirKeys);
+		keyUpdate(player, @kstate);
 		updateWorld(world, dt);
 		
 		err := SDL_FillRect(screen, nil, $00000000);
