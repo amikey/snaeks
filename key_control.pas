@@ -49,6 +49,11 @@ begin
 		pl^.vx := dx;
 		pl^.vy := dy;
 	end;
+	
+	if (pl^.vx = -dx) and (pl^.vy = -dy) then begin
+		pl^.vx := dx;
+		pl^.vy := dy;
+	end;
 end;
 
 procedure processKeyEvent(ev: SDL_Event; kstate: pMovKeyState; player: pPlayerState);
