@@ -1,5 +1,7 @@
 unit world;
 
+{$COPERATORS ON}
+
 interface
 uses sdl_types, SDL, SDL_video, SDL_image, tile, player, pickups, view, resources;
 
@@ -181,6 +183,7 @@ var
 	tRemaining: int;
 	pl: pPlayerState;
 	moved: boolean;
+	i, j: int;
 begin
 	moved := false;
 	for pl in world^.players do begin
@@ -192,8 +195,19 @@ begin
 		end;
 	end;
 	
+	i := 0;
+	while i < length(world^.players) do begin
+		if world^.players[i]^.isDead then begin
+			for j := i to high(world^.players)-1 do begin
+				world^.players[j] := world^.players[j+1];
+			end;
+			setLength(world^.players, length(world^.players)-1);
+		end;
+		i += 1;
+	end;
+	
 	// robots get to decide at most once per frame.
-	if true then begin
+	if moved then begin
 		for pl in world^.players do begin
 			if pl^.isRobot then pl^.robotDecide(pl);
 		end;

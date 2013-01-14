@@ -22,6 +22,11 @@ type
 		movDelay: int;
 		time: int;
 		
+		deathDelay: int;
+		deathTime: int;
+		
+		isDead: boolean;
+		
 		sprite: pSDL_Surface;
 		
 		segments: aPlayerSegment;
@@ -89,8 +94,13 @@ begin
 	ret^.vx := vx;
 	ret^.vy := vy;
 	
+	ret^.isDead := false;
+	
 	ret^.movDelay := 200;
 	ret^.time := 0;
+	
+	ret^.deathDelay := 180;
+	ret^.deathTime := 0;
 	
 	for i := 0 to 2 do ret^.items[i] := nil;
 	
@@ -181,6 +191,15 @@ var
 begin
 	ret.time := 0;
 	ret.moved := false;
+	
+	if pl^.isOccupied(pl^.world, pl^.x+pl^.vx, pl^.y+pl^.vy) then begin
+		pl^.deathTime += dt;
+		if pl^.deathTime >= pl^.deathDelay then pl^.isDead := true;
+		// Death should be treated as moving, since the dead player is removed from the map.
+		ret.moved := true;
+		exit(ret);
+	end;
+	pl^.deathTime := 0;
 	
 	dx := pl^.x - pl^.segments[0].x;
 	dy := pl^.y - pl^.segments[0].y;
