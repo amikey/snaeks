@@ -17,6 +17,9 @@ type
 		
 		itemIcons: pSDL_Surface;
 		iconGunRect: SDL_Rect;
+		
+		victory: pSDL_Surface;
+		defeat: pSDL_Surface;
 	end;
 
 var
@@ -30,7 +33,7 @@ uses SDL_image;
 
 function loadRes(): boolean;
 var
-	rawSnake, rawItemsHUD, rawIcons: pSDL_Surface;
+	rawSnake, rawItemsHUD, rawIcons, rawBanner: pSDL_Surface;
 begin
 	if res.snake <> nil then freeRes();
 	
@@ -63,6 +66,20 @@ begin
 		iconGunRect.y := 0;
 		iconGunRect.w := 40;
 		iconGunRect.h := 40;
+		
+		rawBanner := IMG_Load('res/victory.png');
+		if rawBanner = nil then exit(false);
+		
+		victory := SDL_DisplayFormatAlpha(rawBanner);
+		if victory = nil then exit(false);
+		SDL_FreeSurface(rawBanner);
+		
+		rawBanner := IMG_Load('res/defeat.png');
+		if rawBanner = nil then exit(false);
+		
+		defeat := SDL_DisplayFormatAlpha(rawBanner);
+		if defeat = nil then exit(false);
+		SDL_FreeSurface(rawBanner);
 	end;
 	
 	exit(true);

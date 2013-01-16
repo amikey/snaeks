@@ -1,10 +1,10 @@
-uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, SDL_image, tile, player, key_control, world, pickups, color, robot, resources, hud;
+uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, SDL_image, tile, player, key_control, world, pickups, color, robot, resources, hud, gameover;
 
 {$COPERATORS ON}
 {$PACKRECORDS C}
 
 const
-	framedelay: int = 1000 div 40;
+	framedelay: int = 1000 div 60;
 var
 	screen: pSDL_Surface;
 
@@ -27,6 +27,9 @@ var
 	hud: HUDstate;
 	
 	delay: int;
+	
+	gameEnded: boolean;
+	gameOverS: GameOverScreen;
 begin
 	{$ifdef DEBUG}
 	debugOverlay := SDL_DisplayFormat(screen);
@@ -41,6 +44,8 @@ begin
 	
 	world := newWorld();
 	TMboxRandom(world^.map, 20, 29, 0, 0, world^.map^.width, world^.map^.height);
+	
+	gameEnded := false;
 	
 	player := newPlayer(6, 6, 1, 0);
 	player^.movDelay := 200;
@@ -104,7 +109,15 @@ begin
 		err := SDL_FillRect(screen, nil, $00000000);
 		if err <> 0 then exit(err);
 		drawWorld(world, screen);
-		drawHUD(@hud, screen);
+		
+		if (not gameEnded) and isGameOver(world, player) then begin
+			gameOverS := initGameOver(player);
+			gameEnded := true;
+		end else if not gameEnded then begin
+			drawHUD(@hud, screen);
+		end else begin
+			drawGameOver(screen, gameOverS);
+		end;
 		
 		{$ifdef DEBUG}
 		SDL_BlitSurface(debugOverlay, nil, screen, nil);
