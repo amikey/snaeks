@@ -173,6 +173,8 @@ var
 begin
 	if item.typ^.simpleFood then begin
 		playerAddSegment(pl, seg);
+	end else if item.typ^.poison then begin
+		pl^.isDead := true;
 	end else begin
 		for i := 0 to 2 do begin
 			if pl^.items[i] = nil then begin

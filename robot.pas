@@ -47,6 +47,7 @@ begin
 	setLength(ret, length(world^.pickups));
 	for i := low(world^.pickups) to high(world^.pickups) do begin
 		p := world^.pickups[i];
+		if p.typ^.poison then continue;
 		ret[i].x := p.x;
 		ret[i].y := p.y;
 	end;

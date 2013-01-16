@@ -3,10 +3,11 @@ unit world;
 {$COPERATORS ON}
 
 interface
-uses sdl_types, SDL, SDL_video, SDL_image, tile, player, pickups, view, resources;
+uses sdl_types, SDL, SDL_video, SDL_image, tile, player, pickups, view, resources, math;
 
 const
-	TileEmpty = 1;
+	PoisonTime = 120000;
+	PoisonSpawnInterval = 6000;
 
 type
 	pPickupType = ^PickupType;
@@ -28,6 +29,10 @@ type
 		players: apPlayerState;
 		
 		dropQueue: apPickupType;
+		
+		time: int;
+		poisonSpawnTimer: int;
+		poisonPickupsSpawned: int;
 	end;
 
 function newWorld(): pWorldState;
@@ -59,6 +64,10 @@ begin
 	setLength(world^.pickups, 0);
 	setLength(world^.players, 0);
 	setLength(world^.dropQueue, 0);
+	
+	world^.time := 0;
+	world^.poisonSpawnTimer := 0;
+	world^.poisonPickupsSpawned := 0;
 	exit(world);
 end;
 
@@ -173,6 +182,8 @@ begin
 			end else begin
 				spawnPickupType(world, @pickupGun);
 			end;
+			
+			break;
 		end;
 	end;
 end;
@@ -183,7 +194,7 @@ var
 	tRemaining: int;
 	pl: pPlayerState;
 	moved: boolean;
-	i, j: int;
+	i, j, spawnInterval: int;
 begin
 	moved := false;
 	for pl in world^.players do begin
@@ -195,6 +206,7 @@ begin
 		end;
 	end;
 	
+	// remove dead players
 	i := 0;
 	while i < length(world^.players) do begin
 		if world^.players[i]^.isDead then begin
@@ -210,6 +222,17 @@ begin
 	if moved then begin
 		for pl in world^.players do begin
 			if pl^.isRobot then pl^.robotDecide(pl);
+		end;
+	end;
+	
+	world^.time += dt;
+	if (world^.time >= PoisonTime) and (world^.poisonPickupsSpawned < 100) then begin
+		world^.poisonSpawnTimer += dt;
+		spawnInterval := floor(double(PoisonSpawnInterval) * power(0.95, world^.poisonPickupsSpawned));
+		while world^.poisonSpawnTimer >= spawnInterval do begin
+			spawnPickupType(world, @pickupPoison);
+			world^.poisonPickupsSpawned += 1;
+			world^.poisonSpawnTimer -= spawnInterval;
 		end;
 	end;
 end;

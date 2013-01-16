@@ -27,7 +27,7 @@ function pathTo(world: pWorldState; fromp, top: Waypoint; cutoff: double = -1): 
 function pathToNearest(world: pWorldState; fromp: Waypoint; top: aWaypoint; cutoff: double = -1): aWaypoint;
 
 implementation
-uses tile;
+uses tile, pickups;
 
 type
 	pPointQueue = ^PointQueue;
@@ -196,6 +196,17 @@ begin
 	exit(sqrt((top.x-fromp.x)*(top.x-fromp.x) + (top.y-fromp.y)*(top.y-fromp.y)));
 end;
 
+function _isOccupied(world: pWorldState; x, y:int): boolean; inline;
+var
+	p: Pickup;
+begin
+	if isOccupied(world, x, y) then exit(true);
+	for p in world^.pickups do begin
+		if (p.x = x) and (p.y = y) and (p.typ^.poison) then exit(true);
+	end;
+	exit(false);
+end;
+
 function neighborsOf(wp: int; world: pWorldState; all: pNodePool): aint;
 const
 	xoff: array[1..8] of int = (  0,  1,  1,  1,  0, -1, -1, -1);
@@ -216,9 +227,9 @@ begin
 		x := oldwp.x + xoff[i];
 		y := oldwp.y + yoff[i];
 		if not TMinBounds(world^.map, x, y) then continue;
-		if isOccupied(world, x, y) then continue;
+		if _isOccupied(world, x, y) then continue;
 		if (xoff[i] <> 0) and (yoff[i] <> 0) and
-				( isOccupied(world, oldwp.x, y) or isOccupied(world, x, oldwp.y) ) then continue;
+				( _isOccupied(world, oldwp.x, y) or _isOccupied(world, x, oldwp.y) ) then continue;
 		
 		extantwp := -1;
 		for j := 0 to all^.len-1 do begin
