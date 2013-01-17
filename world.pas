@@ -179,8 +179,6 @@ begin
 			
 			if item.typ^.simpleFood then begin
 				spawnPickupType(world, @pickupFood);
-			end else begin
-				spawnPickupType(world, @pickupGun);
 			end;
 			
 			break;

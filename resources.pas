@@ -12,12 +12,7 @@ type
 	resType = record
 		snake: pSDL_Surface;
 		tiles: TileSprites;
-		
-		itemsHUD: pSDL_Surface;
-		
-		itemIcons: pSDL_Surface;
-		iconGunRect: SDL_Rect;
-		
+				
 		victory: pSDL_Surface;
 		defeat: pSDL_Surface;
 	end;
@@ -33,7 +28,7 @@ uses SDL_image;
 
 function loadRes(): boolean;
 var
-	rawSnake, rawItemsHUD, rawIcons, rawBanner: pSDL_Surface;
+	rawSnake, rawBanner: pSDL_Surface;
 begin
 	if res.snake <> nil then freeRes();
 	
@@ -47,25 +42,6 @@ begin
 	
 		tiles := loadTiles('res/tilemap.png', 10, 10);
 		if tiles.sprite = nil then exit(false);
-		
-		rawItemsHUD := IMG_Load('res/item_box.png');
-		if rawItemsHUD = nil then exit(false);
-		
-		itemsHUD := SDL_DisplayFormatAlpha(rawItemsHUD);
-		if itemsHUD = nil then exit(false);
-		SDL_FreeSurface(rawItemsHUD);
-		
-		rawIcons := IMG_Load('res/item_icons.png');
-		if rawIcons = nil then exit(false);
-		
-		itemIcons := SDL_DisplayFormatAlpha(rawIcons);
-		if itemIcons = nil then exit(false);
-		SDL_FreeSurface(rawIcons);
-		
-		iconGunRect.x := 0;
-		iconGunRect.y := 0;
-		iconGunRect.w := 40;
-		iconGunRect.h := 40;
 		
 		rawBanner := IMG_Load('res/victory.png');
 		if rawBanner = nil then exit(false);
@@ -89,8 +65,8 @@ procedure freeRes();
 begin
 	SDL_FreeSurface(res.snake);
 	SDL_FreeSurface(res.tiles.sprite);
-	SDL_FreeSurface(res.itemsHUD);
-	SDL_FreeSurface(res.itemIcons);
+	SDL_FreeSurface(res.victory);
+	SDL_FreeSurface(res.defeat);
 	setLength(res.tiles.rects, 0);
 end;
 

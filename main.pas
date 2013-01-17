@@ -1,4 +1,4 @@
-uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, SDL_image, tile, player, key_control, world, pickups, color, robot, resources, hud, gameover;
+uses SDL_types, SDL, SDL_video, SDL_events, SDL_keyboard, SDL_timer, SDL_image, tile, player, key_control, world, pickups, color, robot, resources, gameover;
 
 {$COPERATORS ON}
 {$PACKRECORDS C}
@@ -23,8 +23,6 @@ var
 	
 	lastTime, lastFrame, dt: sint32;
 	world: pWorldState;
-	
-	hud: HUDstate;
 	
 	delay: int;
 	
@@ -69,10 +67,7 @@ begin
 	worldAddPlayer(world, player2);
 
 	for i := 0 to 8 do spawnPickupType(world, @pickupFood);
-	spawnPickupType(world, @pickupGun);
-	
-	hud.player := player;
-	
+		
 	lastTime := SDL_GetTicks();
 	lastFrame := lastTime;
 	
@@ -113,9 +108,7 @@ begin
 		if (not gameEnded) and isGameOver(world, player) then begin
 			gameOverS := initGameOver(player);
 			gameEnded := true;
-		end else if not gameEnded then begin
-			drawHUD(@hud, screen);
-		end else begin
+		end else if gameEnded then begin
 			drawGameOver(screen, gameOverS);
 		end;
 		

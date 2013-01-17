@@ -26,7 +26,6 @@ type
 var
 	pickupFood: PickupType;
 	pickupPoison: PickupType;
-	pickupGun: PickupType;
 
 procedure pickupsInit();
 procedure drawPickup(pu: Pickup; screen: pSDL_Surface; view: ViewPort);
@@ -42,8 +41,6 @@ begin
 		srcRect := res.tiles.rects[1];
 	end else if pu.typ^.poison then begin
 		srcRect := res.tiles.rects[3];
-	end else begin
-		srcRect := res.tiles.rects[2];
 	end;
 	
 	srcRect.w := 12;
@@ -64,11 +61,6 @@ begin
 	pickupFood.simpleFood := true;
 	pickupFood.poison := false;
 	pickupFood.icon := nil;
-	
-	pickupGun.simpleFood := false;
-	pickupGun.poison := false;
-	pickupGun.icon := res.itemIcons;
-	pickupGun.iconRect := res.iconGunRect;
 	
 	pickupPoison.simpleFood := false;
 	pickupPoison.poison := true;
