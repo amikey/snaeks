@@ -15,13 +15,8 @@ type
 
 	Uint64 = QWord;
 	
-	{$IFDEF CPU64}
-	int = Int64;
-	Uint = QWord;
-	{$ELSE}
 	int = LongInt;
 	Uint = LongWord;
-	{$ENDIF}
 
 SDL_Bool = LongBool ;
 
