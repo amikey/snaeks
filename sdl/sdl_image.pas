@@ -32,7 +32,7 @@ type
 		IMG_INIT_JPG  = $00000001, 
 		IMG_INIT_PNG  = $00000002,
     		IMG_INIT_TIF  = $00000004,
-    		MG_INIT_WEBP = $00000008
+    		IMG_INIT_WEBP = $00000008
     );
 	
 function IMG_Init(flags: sint32): sint32; cdecl;
